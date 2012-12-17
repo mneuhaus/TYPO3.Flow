@@ -236,4 +236,14 @@ class PropertyMappingConfigurationTest extends \TYPO3\Flow\Tests\UnitTestCase {
 		$this->assertTrue($configuration->shouldMap(6));
 	}
 
+	/**
+	 * @test
+	 */
+	public function getConfigurationForSetsMapUnknownProperties() {
+		$this->propertyMappingConfiguration->allowAllPropertiesRecursively();
+		$subConfiguration = $this->propertyMappingConfiguration->getConfigurationFor('someProperty');
+
+		$this->assertTrue($subConfiguration->shouldMap('unknown'), 'Sub configuration should allow unknown properties');
+	}
+
 }

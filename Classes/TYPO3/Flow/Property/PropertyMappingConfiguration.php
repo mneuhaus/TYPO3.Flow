@@ -89,6 +89,13 @@ class PropertyMappingConfiguration implements \TYPO3\Flow\Property\PropertyMappi
 	protected $mapUnknownProperties = FALSE;
 
 	/**
+	 * If TRUE, unknown properties will be mapped and the setting will be passed on to any child configuration.
+	 *
+	 * @var boolean
+	 */
+	protected $mapUnknownPropertiesRecursively = FALSE;
+
+	/**
 	 * The behavior is as follows:
 	 *
 	 * - if a property has been explicitly forbidden using allowAllPropertiesExcept(...), it is directly rejected
@@ -134,6 +141,17 @@ class PropertyMappingConfiguration implements \TYPO3\Flow\Property\PropertyMappi
 	 */
 	public function allowAllProperties() {
 		$this->mapUnknownProperties = TRUE;
+		return $this;
+	}
+
+	/**
+	 * Allow all properties in property mapping, even unknown ones, recursively.
+	 *
+	 * @return \TYPO3\Flow\Property\PropertyMappingConfiguration
+	 * @api
+	 */
+	public function allowAllPropertiesRecursively() {
+		$this->mapUnknownPropertiesRecursively = TRUE;
 		return $this;
 	}
 
@@ -224,7 +242,12 @@ class PropertyMappingConfiguration implements \TYPO3\Flow\Property\PropertyMappi
 			return $this->subConfigurationForProperty[self::PROPERTY_PATH_PLACEHOLDER];
 		}
 
-		return new \TYPO3\Flow\Property\PropertyMappingConfiguration();
+		$subConfigurationForProperty = new static();
+		if ($this->mapUnknownPropertiesRecursively === TRUE) {
+			$subConfigurationForProperty->allowAllProperties();
+		}
+
+		return $subConfigurationForProperty;
 	}
 
 	/**
@@ -342,11 +365,10 @@ class PropertyMappingConfiguration implements \TYPO3\Flow\Property\PropertyMappi
 
 		$currentProperty = array_shift($splittedPropertyPath);
 		if (!isset($this->subConfigurationForProperty[$currentProperty])) {
-			$type = get_class($this);
 			if (isset($this->subConfigurationForProperty[self::PROPERTY_PATH_PLACEHOLDER])) {
 				$this->subConfigurationForProperty[$currentProperty] = clone $this->subConfigurationForProperty[self::PROPERTY_PATH_PLACEHOLDER];
 			} else {
-				$this->subConfigurationForProperty[$currentProperty] = new $type;
+				$this->subConfigurationForProperty[$currentProperty] = new static();
 			}
 		}
 		return $this->subConfigurationForProperty[$currentProperty]->traverseProperties($splittedPropertyPath);
