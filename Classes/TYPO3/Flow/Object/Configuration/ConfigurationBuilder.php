@@ -172,7 +172,7 @@ class ConfigurationBuilder {
 							if (array_key_exists('value', $propertyValue)) {
 								$property = new ConfigurationProperty($propertyName, $propertyValue['value'], ConfigurationProperty::PROPERTY_TYPES_STRAIGHTVALUE);
 							} elseif (array_key_exists('object', $propertyValue)) {
-								$property = $this->parsePropertyOfTypeObject($propertyName, $propertyValue['object'], $configurationSourceHint);
+								$property = $this->parsePropertyOfTypeObject($propertyName, $propertyValue['object'], $objectConfiguration);
 							} elseif (array_key_exists('setting', $propertyValue)) {
 								$property = new ConfigurationProperty($propertyName, $propertyValue['setting'], ConfigurationProperty::PROPERTY_TYPES_SETTING);
 							} else {
@@ -261,11 +261,12 @@ class ConfigurationBuilder {
 	 *
 	 * @param string $propertyName Name of the property
 	 * @param mixed $objectNameOrConfiguration Value of the "object" section of the property configuration - either a string or an array
-	 * @param string $configurationSourceHint A human readable hint on the original source of the configuration (for troubleshooting)
-	 * @return \TYPO3\Flow\Object\Configuration\ConfigurationProperty A configuration property of type object
+	 * @param \TYPO3\Flow\Object\Configuration\Configuration $parentObjectConfiguration The Configuration object this property belongs to
 	 * @throws \TYPO3\Flow\Object\Exception\InvalidObjectConfigurationException
+	 * @return \TYPO3\Flow\Object\Configuration\ConfigurationProperty A configuration property of type object
 	 */
-	protected function parsePropertyOfTypeObject($propertyName, $objectNameOrConfiguration, $configurationSourceHint) {
+	protected function parsePropertyOfTypeObject($propertyName, $objectNameOrConfiguration, Configuration $parentObjectConfiguration) {
+		$annotations = array();
 		if (is_array($objectNameOrConfiguration)) {
 			if (isset($objectNameOrConfiguration['name'])) {
 				$objectName = $objectNameOrConfiguration['name'];
@@ -273,11 +274,16 @@ class ConfigurationBuilder {
 			} else {
 				if (isset($objectNameOrConfiguration['factoryObjectName'])) {
 					$objectName = NULL;
+				} elseif ($annotations = $this->reflectionService->getPropertyTagValues($parentObjectConfiguration->getClassName(), $propertyName, 'var')) {
+					if (count($annotations) !== 1) {
+						throw new \TYPO3\Flow\Object\Exception(sprintf('The property "%s" of object "%s" has not a proper @var annotation, therefore the correct instantiation class name can not be determined.', $propertyName, $parentObjectConfiguration->getClassName()));
+					}
+					$objectName = ltrim($annotations[0], '\\');
 				} else {
-					throw new \TYPO3\Flow\Object\Exception\InvalidObjectConfigurationException('Object configuration for property "' . $propertyName . '" contains neither object name nor factory object name in ' . $configurationSourceHint, 1297097815);
+					throw new \TYPO3\Flow\Object\Exception\InvalidObjectConfigurationException('Object configuration for property "' . $propertyName . '" contains neither object name, nor factory object name, and nor is the property annotated, in '. $parentObjectConfiguration->getConfigurationSourceHint(), 1297097815);
 				}
 			}
-			$objectConfiguration = $this->parseConfigurationArray($objectName, $objectNameOrConfiguration, $configurationSourceHint . ', property "' . $propertyName .'"');
+			$objectConfiguration = $this->parseConfigurationArray($objectName, $objectNameOrConfiguration, $parentObjectConfiguration->getConfigurationSourceHint() . ', property "' . $propertyName .'"');
 			$property = new ConfigurationProperty($propertyName, $objectConfiguration, ConfigurationProperty::PROPERTY_TYPES_OBJECT);
 		} else {
 			$property = new ConfigurationProperty($propertyName, $objectNameOrConfiguration, ConfigurationProperty::PROPERTY_TYPES_OBJECT);
