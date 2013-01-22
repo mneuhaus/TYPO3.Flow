@@ -81,4 +81,36 @@ class LocaleTest extends \TYPO3\Flow\Tests\UnitTestCase {
 		$locale = new \TYPO3\Flow\I18n\Locale('AR-arab_ae');
 		$this->assertEquals('ar_Arab_AE', (string)$locale);
 	}
+
+	/**
+	 * @test
+	 */
+	public function getCldrModelQueriesCldrRepositoryWithDefaultDirectoryPathBeingMain() {
+		$locale = new \TYPO3\Flow\I18n\Locale('de_DE');
+
+		$cldrRepository = $this->getMock('TYPO3\Flow\I18n\Cldr\CldrRepository');
+		$cldrRepository
+			->expects($this->once())
+			->method('getModelForLocale')
+			->with($locale, 'main');
+
+		$this->inject($locale, 'cldrRepository', $cldrRepository);
+		$locale->getCldrModel();
+	}
+
+	/**
+	 * @test
+	 */
+	public function getCldrModelQueriesCldrRepositoryCorrectlyWithSpecifiedDirectoryPath() {
+		$locale = new \TYPO3\Flow\I18n\Locale('de_DE');
+
+		$cldrRepository = $this->getMock('TYPO3\Flow\I18n\Cldr\CldrRepository');
+		$cldrRepository
+			->expects($this->once())
+			->method('getModelForLocale')
+			->with($locale, 'someSpecifiedDirectoryPath');
+
+		$this->inject($locale, 'cldrRepository', $cldrRepository);
+		$locale->getCldrModel('someSpecifiedDirectoryPath');
+	}
 }
