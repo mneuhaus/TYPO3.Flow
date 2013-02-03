@@ -42,4 +42,17 @@ abstract class AbstractEntryPoint implements \TYPO3\Flow\Security\Authentication
 		return $this->options;
 	}
 
+	/**
+	 * Check if the entry point can handle the current request
+	 *
+	 * The AbstractEntryPoint returns always TRUE. Subclasses should implement this check
+	 * to handle requests properly.
+	 *
+	 * @param \TYPO3\Flow\Http\Request $request The current request
+	 * @return boolean TRUE if the request can be handled by this entry point, FALSE otherwise
+	 */
+	public function canHandleRequest(\TYPO3\Flow\Http\Request $request) {
+		return TRUE;
+	}
+
 }

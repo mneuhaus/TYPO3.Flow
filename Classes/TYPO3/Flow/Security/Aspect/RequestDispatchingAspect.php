@@ -86,7 +86,7 @@ class RequestDispatchingAspect {
 			foreach ($this->securityContext->getAuthenticationTokens() as $token) {
 				$entryPoint = $token->getAuthenticationEntryPoint();
 
-				if ($entryPoint !== NULL) {
+				if ($entryPoint !== NULL && $entryPoint->canHandleRequest($request->getHttpRequest())) {
 					$entryPointFound = TRUE;
 					if ($entryPoint instanceof WebRedirect) {
 						$options = $entryPoint->getOptions();
