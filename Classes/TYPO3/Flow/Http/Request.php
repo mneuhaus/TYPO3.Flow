@@ -388,6 +388,16 @@ class Request extends Message {
 	}
 
 	/**
+	 * Returns the server's IP address.
+	 *
+	 * @return string The server's IP address
+	 * @api
+	 */
+	public function getServerIpAddress() {
+		return (isset($this->server['SERVER_ADDR']) ? $this->server['SERVER_ADDR'] : NULL);
+	}
+
+	/**
 	 * Returns an list of IANA media types defined in the Accept header.
 	 *
 	 * The list is ordered by user preference, after evaluating the Quality Values
