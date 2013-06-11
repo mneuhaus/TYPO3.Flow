@@ -34,6 +34,14 @@ TYPO3\Flow\I18n\Service:
         arguments:
           1:
             value: Flow_I18n_AvailableLocalesCache
+TYPO3\Flow\I18n\Detection\CookieDetectionStrategy:
+  properties:
+    cookieName:
+      setting: TYPO3.Flow.i18n.cookieDetectionCookieName
+TYPO3\Flow\I18n\Detection\HostDetectionStrategy:
+  properties:
+    patternMap:
+      setting: TYPO3.Flow.i18n.hostDetectionPatternMap
 TYPO3\Flow\I18n\Cldr\CldrModel:
   properties:
     cache:
