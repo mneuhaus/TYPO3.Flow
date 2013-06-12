@@ -113,16 +113,17 @@ class Translator {
 	 * @param \TYPO3\Flow\I18n\Locale $locale Locale to use (NULL for default one)
 	 * @param string $sourceName Name of file with translations, base path is $packageKey/Resources/Private/Locale/Translations/
 	 * @param string $packageKey Key of the package containing the source file
+	 * @param string $division An optional statement to further narrow down the pool of translations to look in. Purpose dependent on translation provider implementation.
 	 * @return string Translated $originalLabel or $originalLabel itself on failure
 	 * @api
 	 */
-	public function translateByOriginalLabel($originalLabel, array $arguments = array(), $quantity = NULL, \TYPO3\Flow\I18n\Locale $locale = NULL, $sourceName = 'Main', $packageKey = 'TYPO3.Flow') {
+	public function translateByOriginalLabel($originalLabel, array $arguments = array(), $quantity = NULL, \TYPO3\Flow\I18n\Locale $locale = NULL, $sourceName = 'Main', $packageKey = 'TYPO3.Flow', $division = NULL) {
 		if ($locale === NULL) {
 			$locale = $this->localizationService->getConfiguration()->getCurrentLocale();
 		}
 		$pluralForm = $this->getPluralForm($quantity, $locale);
 
-		$translatedMessage = $this->translationProvider->getTranslationByOriginalLabel($originalLabel, $locale, $pluralForm, $sourceName, $packageKey);
+		$translatedMessage = $this->translationProvider->getTranslationByOriginalLabel($originalLabel, $locale, $pluralForm, $sourceName, $packageKey, $division);
 
 		if ($translatedMessage === FALSE) {
 			$translatedMessage = $originalLabel;
@@ -154,17 +155,18 @@ class Translator {
 	 * @param \TYPO3\Flow\I18n\Locale $locale Locale to use (NULL for default one)
 	 * @param string $sourceName Name of file with translations, base path is $packageKey/Resources/Private/Locale/Translations/
 	 * @param string $packageKey Key of the package containing the source file
+	 * @param string $division An optional statement to further narrow down the pool of translations to look in. Purpose dependent on translation provider implementation.
 	 * @return string Translated message or $labelId on failure
 	 * @api
 	 * @see \TYPO3\Flow\I18n\Translator::translateByOriginalLabel()
 	 */
-	public function translateById($labelId, array $arguments = array(), $quantity = NULL, \TYPO3\Flow\I18n\Locale $locale = NULL, $sourceName = 'Main', $packageKey = 'TYPO3.Flow') {
+	public function translateById($labelId, array $arguments = array(), $quantity = NULL, \TYPO3\Flow\I18n\Locale $locale = NULL, $sourceName = 'Main', $packageKey = 'TYPO3.Flow', $division = NULL) {
 		if ($locale === NULL) {
 			$locale = $this->localizationService->getConfiguration()->getCurrentLocale();
 		}
 		$pluralForm = $this->getPluralForm($quantity, $locale);
 
-		$translatedMessage = $this->translationProvider->getTranslationById($labelId, $locale, $pluralForm, $sourceName, $packageKey);
+		$translatedMessage = $this->translationProvider->getTranslationById($labelId, $locale, $pluralForm, $sourceName, $packageKey, $division);
 
 		if ($translatedMessage === FALSE) {
 			return $labelId;

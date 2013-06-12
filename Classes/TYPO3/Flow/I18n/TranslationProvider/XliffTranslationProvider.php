@@ -74,10 +74,11 @@ class XliffTranslationProvider implements \TYPO3\Flow\I18n\TranslationProvider\T
 	 * @param string $pluralForm One of RULE constants of PluralsReader
 	 * @param string $sourceName A relative path to the filename with translations (labels' catalog)
 	 * @param string $packageKey Key of the package containing the source file
+	 * @param string $division An optional statement to further narrow down the pool of translations to look in. In this implementation, it's the <file> element.
 	 * @return mixed Translated label or FALSE on failure
 	 * @throws \TYPO3\Flow\I18n\TranslationProvider\Exception\InvalidPluralFormException
 	 */
-	public function getTranslationByOriginalLabel($originalLabel, \TYPO3\Flow\I18n\Locale $locale, $pluralForm = NULL, $sourceName = 'Main', $packageKey = 'TYPO3.Flow') {
+	public function getTranslationByOriginalLabel($originalLabel, \TYPO3\Flow\I18n\Locale $locale, $pluralForm = NULL, $sourceName = 'Main', $packageKey = 'TYPO3.Flow', $division = NULL) {
 		$model = $this->getModel($packageKey, $sourceName, $locale);
 
 		if ($pluralForm !== NULL) {
@@ -92,7 +93,7 @@ class XliffTranslationProvider implements \TYPO3\Flow\I18n\TranslationProvider\T
 			$pluralFormIndex = 0;
 		}
 
-		return $model->getTargetBySource($originalLabel, $pluralFormIndex);
+		return $model->getTargetBySource($originalLabel, $pluralFormIndex, $division);
 	}
 
 	/**
@@ -105,10 +106,11 @@ class XliffTranslationProvider implements \TYPO3\Flow\I18n\TranslationProvider\T
 	 * @param string $pluralForm One of RULE constants of PluralsReader
 	 * @param string $sourceName A relative path to the filename with translations (labels' catalog)
 	 * @param string $packageKey Key of the package containing the source file
+	 * @param string $division An optional statement to further narrow down the pool of translations to look in. In this implementation, it's the <file> element.
 	 * @return mixed Translated label or FALSE on failure
 	 * @throws \TYPO3\Flow\I18n\TranslationProvider\Exception\InvalidPluralFormException
 	 */
-	public function getTranslationById($labelId, \TYPO3\Flow\I18n\Locale $locale, $pluralForm = NULL, $sourceName = 'Main', $packageKey = 'TYPO3.Flow') {
+	public function getTranslationById($labelId, \TYPO3\Flow\I18n\Locale $locale, $pluralForm = NULL, $sourceName = 'Main', $packageKey = 'TYPO3.Flow', $division = NULL) {
 		$model = $this->getModel($packageKey, $sourceName, $locale);
 
 		if ($pluralForm !== NULL) {
@@ -123,7 +125,7 @@ class XliffTranslationProvider implements \TYPO3\Flow\I18n\TranslationProvider\T
 			$pluralFormIndex = 0;
 		}
 
-		return $model->getTargetByTransUnitId($labelId, $pluralFormIndex);
+		return $model->getTargetByTransUnitId($labelId, $pluralFormIndex, $division);
 	}
 
 	/**

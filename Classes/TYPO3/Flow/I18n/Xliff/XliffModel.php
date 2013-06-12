@@ -117,27 +117,40 @@ class XliffModel {
 	 *
 	 * @param string $source Label in original language ("source" tag in XLIFF)
 	 * @param integer $pluralFormIndex Index of plural form to use (starts with 0)
+	 * @param string $forFile If set, find the given ID only in the matching <file> tag
 	 * @return mixed Translated label or FALSE on failure
 	 */
-	public function getTargetBySource($source, $pluralFormIndex = 0) {
-		if (!isset($this->xmlParsedData['translationUnits'])) {
-			$this->systemLogger->log(sprintf('No trans-unit elements were found in "%s". This is allowed per specification, but no translation can be applied then.', $this->sourcePath), LOG_WARNING);
+	public function getTargetBySource($source, $pluralFormIndex = 0, $forFile = NULL) {
+		if ($forFile === NULL) {
+			foreach (array_keys($this->xmlParsedData['files']) as $fileName) {
+				$attempt = $this->getTargetBySource($source, $pluralFormIndex, $fileName);
+				if ($attempt !== FALSE) {
+					return $attempt;
+				}
+			}
 			return FALSE;
 		}
-		foreach ($this->xmlParsedData['translationUnits'] as $translationUnit) {
-			// $source is always singular (or only) form, so compare with index 0
-			if (!isset($translationUnit[0]) || $translationUnit[0]['source'] !== $source) {
-				continue;
-			}
-
-			if (count($translationUnit) <= $pluralFormIndex) {
-				$this->systemLogger->log('The plural form index "' . $pluralFormIndex . '" for the source translation "' . $source . '"  in ' . $this->sourcePath . ' is not available.', LOG_WARNING);
-				return FALSE;
-			}
-
-			return $translationUnit[$pluralFormIndex]['target'] ?: FALSE;
+		if (!isset($this->xmlParsedData['files'][$forFile])) {
+			return FALSE;
 		}
 
+		$fileData = $this->xmlParsedData['files'][$forFile];
+		if (isset($fileData['translationUnits']) && is_array($fileData['translationUnits'])) {
+			foreach ($fileData['translationUnits'] as $translationUnit) {
+				// $source is always singular (or only) form, so compare with index 0
+				if (!isset($translationUnit[0]) || $translationUnit[0]['source'] !== $source) {
+					continue;
+				}
+
+				if (count($translationUnit) <= $pluralFormIndex) {
+					$this->systemLogger->log('The plural form index "' . $pluralFormIndex . '" for the source translation "' . $source . '"  in ' . $this->sourcePath . ' is not available.', LOG_WARNING);
+					return FALSE;
+				}
+				return $translationUnit[$pluralFormIndex]['target'] ?: FALSE;
+			}
+		} else {
+			$this->systemLogger->log(sprintf('No trans-unit elements were found in "%s". This is allowed per specification, but no translation can be applied then.', $this->sourcePath), LOG_WARNING);
+		}
 		return FALSE;
 	}
 
@@ -148,25 +161,36 @@ class XliffModel {
 	 *
 	 * @param string $transUnitId The "id" attribute of "trans-unit" tag in XLIFF
 	 * @param integer $pluralFormIndex Index of plural form to use (starts with 0)
+	 * @param string $forFile If set, find the given ID only in the matching <file> tag
 	 * @return mixed Translated label or FALSE on failure
 	 */
-	public function getTargetByTransUnitId($transUnitId, $pluralFormIndex = 0) {
-		if (!isset($this->xmlParsedData['translationUnits'][$transUnitId])) {
+	public function getTargetByTransUnitId($transUnitId, $pluralFormIndex = 0, $forFile = NULL) {
+		if (!isset($this->xmlParsedData['transUnitIdsInFiles'][$transUnitId])) {
 			$this->systemLogger->log('No trans-unit element with the id "' . $transUnitId . '" was found in ' . $this->sourcePath . '. Either this translation has been removed or the id in the code or template referring to the translation is wrong.', LOG_WARNING);
 			return FALSE;
 		}
 
-		if (!isset($this->xmlParsedData['translationUnits'][$transUnitId][$pluralFormIndex])) {
+		if ($forFile !== NULL) {
+			$fileData = &$this->xmlParsedData['files'][$forFile];
+			if (!isset($fileData['translationUnits'][$transUnitId])) {
+				$this->systemLogger->log(sprintf('No trans-unit element with the id "%s" for the file "%s" was found in %s. Either this translation has been removed or the id in the code or template referring to the translation is wrong.', $transUnitId, $forFile, $this->sourcePath), LOG_WARNING);
+				return FALSE;
+			}
+		} else {
+			$fileData =  &$this->xmlParsedData['transUnitIdsInFiles'][$transUnitId]['file'];
+		}
+
+		if (!isset($fileData['translationUnits'][$transUnitId][$pluralFormIndex])) {
 			$this->systemLogger->log('The plural form index "' . $pluralFormIndex . '" for the trans-unit element with the id "' . $transUnitId . '" in ' . $this->sourcePath . ' is not available.', LOG_WARNING);
 			return FALSE;
 		}
 
-		if ($this->xmlParsedData['translationUnits'][$transUnitId][$pluralFormIndex]['target']) {
-			return $this->xmlParsedData['translationUnits'][$transUnitId][$pluralFormIndex]['target'];
-		} elseif ($this->locale->getLanguage() === $this->xmlParsedData['sourceLocale']->getLanguage()) {
-			return $this->xmlParsedData['translationUnits'][$transUnitId][$pluralFormIndex]['source'] ?: FALSE;
+		if ($fileData['translationUnits'][$transUnitId][$pluralFormIndex]['target']) {
+			return $fileData['translationUnits'][$transUnitId][$pluralFormIndex]['target'];
+		} elseif ($this->locale->getLanguage() === $fileData['sourceLocale']->getLanguage()) {
+			return $fileData['translationUnits'][$transUnitId][$pluralFormIndex]['source'] ?: FALSE;
 		} else {
-			$this->systemLogger->log('The target translation was empty and the source translation language (' . $this->xmlParsedData['sourceLocale']->getLanguage() . ') does not match the current locale (' . $this->locale->getLanguage() . ') for the trans-unit element with the id "' . $transUnitId . '" in ' . $this->sourcePath, LOG_WARNING);
+			$this->systemLogger->log('The target translation was empty and the source translation language (' . $fileData['sourceLocale']->getLanguage() . ') does not match the current locale (' . $this->locale->getLanguage() . ') for the trans-unit element with the id "' . $transUnitId . '" in ' . $this->sourcePath, LOG_WARNING);
 			return FALSE;
 		}
 	}
