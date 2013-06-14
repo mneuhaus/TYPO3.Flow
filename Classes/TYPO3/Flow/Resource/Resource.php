@@ -47,6 +47,17 @@ class Resource {
 	protected $fileExtension = '';
 
 	/**
+	 * @var integer
+	 * @Flow\Validate(type="NumberRange", options={ "minimum"=0 })
+	 */
+	protected $filesize = 0;
+
+	/**
+	 * @var \DateTime
+	 */
+	protected $lastModified;
+
+	/**
 	 * Returns the SHA1 of the ResourcePointer this Resource uses.
 	 *
 	 * @return string
@@ -83,6 +94,8 @@ class Resource {
 		if ($this->fileExtension !== '') {
 			$this->filename .= '.' . $this->fileExtension;
 		}
+
+		$this->lastModified = new \DateTime();
 	}
 
 	/**
@@ -103,6 +116,26 @@ class Resource {
 	 */
 	public function getFileExtension() {
 		return $this->fileExtension;
+	}
+
+	/**
+	 * Returns the file size for this resource
+	 *
+	 * @return string The file size of this resource
+	 * @api
+	 */
+	public function getFilesize() {
+		return $this->filesize;
+	}
+
+	/**
+	 * Returns the last modification timestamp for this resource
+	 *
+	 * @return \DateTime The date and time of last modification.
+	 * @api
+	 */
+	public function getLastModified() {
+		return $this->lastModified;
 	}
 
 	/**
@@ -135,6 +168,8 @@ class Resource {
 	 */
 	public function setResourcePointer(\TYPO3\Flow\Resource\ResourcePointer $resourcePointer) {
 		$this->resourcePointer = $resourcePointer;
+		$this->filesize = filesize($this->getUri());
+		$this->lastModified = new \DateTime();
 	}
 
 	/**
