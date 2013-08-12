@@ -156,10 +156,10 @@ abstract class AbstractToken implements \TYPO3\Flow\Security\Authentication\Toke
 	/**
 	 * Set the (authenticated) account
 	 *
-	 * @param \TYPO3\Flow\Security\Account $account An account object
+	 * @param \TYPO3\Flow\Security\AccountInterface $account An account object
 	 * @return void
 	 */
-	public function setAccount(\TYPO3\Flow\Security\Account $account = NULL) {
+	public function setAccount(\TYPO3\Flow\Security\AccountInterface $account = NULL) {
 		$this->account = $account;
 	}
 
