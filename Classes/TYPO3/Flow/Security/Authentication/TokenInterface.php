@@ -129,10 +129,10 @@ interface TokenInterface {
 	/**
 	 * Set the (authenticated) account
 	 *
-	 * @param \TYPO3\Flow\Security\Account $account An account object
+	 * @param \TYPO3\Flow\Security\AccountInterface $account An account object
 	 * @return void
 	 */
-	public function setAccount(\TYPO3\Flow\Security\Account $account = NULL);
+	public function setAccount(\TYPO3\Flow\Security\AccountInterface $account = NULL);
 
 	/**
 	 * Returns a string representation of the token for logging purposes.
