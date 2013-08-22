@@ -15,6 +15,7 @@ use Doctrine\ORM\Mapping as ORM;
 use TYPO3\Flow\Annotations as Flow;
 use TYPO3\Flow\Aop\JoinPointInterface;
 use TYPO3\Flow\Reflection\ObjectAccess;
+use TYPO3\Flow\Reflection\ReflectionService;
 use TYPO3\Flow\Utility\Algorithms;
 
 /**
@@ -38,6 +39,12 @@ class PersistenceMagicAspect {
 	 * @var \TYPO3\Flow\Persistence\PersistenceManagerInterface
 	 */
 	protected $persistenceManager;
+
+	/**
+	 * @Flow\Inject
+	 * @var ReflectionService
+	 */
+	protected $reflectionService;
 
 	/**
 	 * @Flow\Pointcut("classAnnotatedWith(TYPO3\Flow\Annotations\Entity) || classAnnotatedWith(Doctrine\ORM\Mapping\Entity)")
@@ -85,25 +92,42 @@ class PersistenceMagicAspect {
 	 *
 	 * @param \TYPO3\Flow\Aop\JoinPointInterface $joinPoint The current join point
 	 * @return void
-	 * @Flow\Before("classAnnotatedWith(TYPO3\Flow\Annotations\ValueObject) && method(.*->__construct()) && filter(TYPO3\Flow\Persistence\Doctrine\Mapping\Driver\FlowAnnotationDriver)")
+	 * @Flow\After("classAnnotatedWith(TYPO3\Flow\Annotations\ValueObject) && method(.*->__construct()) && filter(TYPO3\Flow\Persistence\Doctrine\Mapping\Driver\FlowAnnotationDriver)")
 	 */
 	public function generateValueHash(JoinPointInterface $joinPoint) {
 		$proxy = $joinPoint->getProxy();
-		$hashSource = get_class($proxy);
-		if (property_exists($proxy, 'Persistence_Object_Identifier')) {
-			$hashSource .= ObjectAccess::getProperty($proxy, 'Persistence_Object_Identifier', TRUE);
-		}
-		foreach ($joinPoint->getMethodArguments() as $argumentValue) {
-			if (is_array($argumentValue)) {
-				$hashSource .= ($this->useIgBinary === TRUE) ? igbinary_serialize($argumentValue) : serialize($argumentValue);
-			} elseif (!is_object($argumentValue)) {
-				$hashSource .= $argumentValue;
-			} elseif (property_exists($argumentValue, 'Persistence_Object_Identifier')) {
-				$hashSource .= ObjectAccess::getProperty($argumentValue, 'Persistence_Object_Identifier', TRUE);
-			} elseif ($argumentValue instanceof \DateTime) {
-				$hashSource .= $argumentValue->getTimestamp();
+		$proxyClassName = get_class($proxy);
+		$hashSourceParts = array();
+
+		$properties = $this->reflectionService->getClassPropertyNames($proxyClassName);
+		foreach ($properties as $property) {
+			if ($this->reflectionService->isPropertyAnnotatedWith($proxyClassName, $property, 'TYPO3\Flow\Annotations\Transient')) {
+				continue;
 			}
+
+			$propertyValue = ObjectAccess::getProperty($proxy, $property, TRUE);
+
+			$hashSource = '';
+			if (is_array($propertyValue)) {
+				$hashSource = ($this->useIgBinary === TRUE) ? igbinary_serialize($propertyValue) : serialize($propertyValue);
+			} elseif (!is_object($propertyValue)) {
+				$hashSource = $propertyValue;
+			} elseif (property_exists($propertyValue, 'Persistence_Object_Identifier')) {
+				$hashSource = ObjectAccess::getProperty($propertyValue, 'Persistence_Object_Identifier', TRUE);
+			} elseif ($propertyValue instanceof \DateTime) {
+				$hashSource = $propertyValue->format(\DateTime::RFC850);
+			}
+
+			$hashSourceParts[$property] = $hashSource;
 		}
+
+		ksort($hashSourceParts);
+
+		$hashSource = $proxyClassName;
+		foreach ($hashSourceParts as $hashSourceKey => $hashSourceValue) {
+			$hashSource .= $hashSourceKey . ':' . $hashSourceValue;
+		}
+
 		$proxy = $joinPoint->getProxy();
 		ObjectAccess::setProperty($proxy, 'Persistence_Object_Identifier', sha1($hashSource), TRUE);
 	}
