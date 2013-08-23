@@ -11,12 +11,21 @@ namespace TYPO3\Flow\Error;
  * The TYPO3 project - inspiring people to share!                         *
  *                                                                        */
 
+use TYPO3\Flow\Core\Bootstrap;
+use TYPO3\Flow\Reflection\ObjectAccess;
+use TYPO3\Flow\Annotations as Flow;
+
 require_once('Exception.php');
 
 /**
  * An abstract exception handler
  */
 abstract class AbstractExceptionHandler implements ExceptionHandlerInterface {
+
+	/**
+	 * @var Bootstrap
+	 */
+	protected $bootstrap;
 
 	/**
 	 * @var \TYPO3\Flow\Log\SystemLoggerInterface
@@ -27,6 +36,13 @@ abstract class AbstractExceptionHandler implements ExceptionHandlerInterface {
 	 * @var array
 	 */
 	protected $options = array();
+
+	/**
+	 * @param Bootstrap $bootstrap
+	 */
+	public function injectBootstrap(Bootstrap $bootstrap) {
+		$this->bootstrap = $bootstrap;
+	}
 
 	/**
 	 * Injects the system logger
@@ -128,6 +144,13 @@ abstract class AbstractExceptionHandler implements ExceptionHandlerInterface {
 		}
 		if (isset($renderingOptions['variables'])) {
 			$fluidView->assignMultiple($renderingOptions['variables']);
+		}
+		if (isset($renderingOptions['objectVariables']) && $this->bootstrap !== NULL) {
+			foreach ($renderingOptions['objectVariables'] as $assignmentName => $objectNameAndPropertyPath) {
+				list($objectName, $propertyPath) = explode('.', $objectNameAndPropertyPath, 2);
+				$object = $this->bootstrap->getObjectManager()->get($objectName);
+				$fluidView->assign($assignmentName, ObjectAccess::getPropertyPath($object, $propertyPath));
+			}
 		}
 		$fluidView->assignMultiple(array(
 			'exception' => $exception,
