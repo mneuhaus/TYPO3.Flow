@@ -12,6 +12,11 @@ namespace TYPO3\Flow\Tests\Functional\Persistence\Doctrine;
  *                                                                        */
 
 use TYPO3\Flow\Persistence\Doctrine\Query;
+use TYPO3\Flow\Tests\Functional\Persistence\Fixtures\Category;
+use TYPO3\Flow\Tests\Functional\Persistence\Fixtures\Comment;
+use TYPO3\Flow\Tests\Functional\Persistence\Fixtures\CommentRepository;
+use TYPO3\Flow\Tests\Functional\Persistence\Fixtures\Post;
+use TYPO3\Flow\Tests\Functional\Persistence\Fixtures\PostRepository;
 
 /**
  * Testcase for query
@@ -186,20 +191,59 @@ class QueryTest extends \TYPO3\Flow\Tests\FunctionalTestCase {
 	/**
 	 * @test
 	 */
-	public function comlexQueryWithJoinsCanBeExecutedAfterDeserialization() {
-		$postEntityRepository = new \TYPO3\Flow\Tests\Functional\Persistence\Fixtures\PostRepository;
+	public function complexQueryWithJoinsMakesCorrectConjunctions() {
+		$postEntityRepository = new PostRepository;
+
+		$notApprovedCategory = new Category();
+		$approvedCategory = new Category();
+		$approvedCategory->setApproved(TRUE);
+
+		$firstPost = new Post;
+		$firstPost->setTitle('First Post');
+		$firstPost->addCategory($notApprovedCategory);
+		$postEntityRepository->add($firstPost);
+
+		$secondPost = new Post;
+		$secondPost->setTitle('Second Post');
+		$secondPost->addCategory($notApprovedCategory);
+		$secondPost->addCategory($approvedCategory);
+		$postEntityRepository->add($secondPost);
+
+		$thirdPost = new Post;
+		$thirdPost->setTitle('Third Post');
+		$thirdPost->addCategory($approvedCategory);
+		$postEntityRepository->add($thirdPost);
+
+		$this->persistenceManager->persistAll();
+
+		$query = new Query('TYPO3\Flow\Tests\Functional\Persistence\Fixtures\Post');
+		$query->matching(
+			$query->logicalAnd(
+				$query->contains('categories.posts', $firstPost),
+				$query->logicalNot($query->equals('Persistence_Object_Identifier', $this->persistenceManager->getIdentifierByObject($firstPost))),
+				$query->equals('categories.approved', TRUE)
+			)
+		);
+		$this->assertEquals(0, $query->count());
+	}
+
+	/**
+	 * @test
+	 */
+	public function complexQueryWithJoinsCanBeExecutedAfterDeserialization() {
+		$postEntityRepository = new PostRepository;
 		$postEntityRepository->removeAll();
 
-		$commentRepository = new \TYPO3\Flow\Tests\Functional\Persistence\Fixtures\CommentRepository;
+		$commentRepository = new CommentRepository;
 		$commentRepository->removeAll();
 
-		$testEntity1 = new \TYPO3\Flow\Tests\Functional\Persistence\Fixtures\Post;
+		$testEntity1 = new Post;
 		$testEntity1->setTitle('Flow');
 		$postEntityRepository->add($testEntity1);
 
-		$testEntity2 = new \TYPO3\Flow\Tests\Functional\Persistence\Fixtures\Post;
+		$testEntity2 = new Post;
 		$testEntity2->setTitle('Flow with comment');
-		$comment = new \TYPO3\Flow\Tests\Functional\Persistence\Fixtures\Comment;
+		$comment = new Comment;
 		$comment->setContent('Flow');
 		$testEntity2->setComment($comment);
 		$postEntityRepository->add($testEntity2);

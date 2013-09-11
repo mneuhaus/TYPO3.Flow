@@ -11,15 +11,32 @@ namespace TYPO3\Flow\Tests\Functional\Persistence\Fixtures;
  * The TYPO3 project - inspiring people to share!                         *
  *                                                                        */
 
+use TYPO3\Flow\Annotations as Flow;
+use Doctrine\ORM\Mapping as ORM;
+
 /**
- * A repository for posts
- * @TYPO3\Flow\Annotations\Scope("singleton")
+ * A sample category entity for tests
+ *
+ * @Flow\Entity
  */
-class PostRepository extends \TYPO3\Flow\Persistence\Repository {
+class Category {
 
 	/**
-	 * @var string
+	 * @var \Doctrine\Common\Collections\Collection<\TYPO3\Flow\Tests\Functional\Persistence\Fixtures\Post>
+	 * @ORM\ManyToMany(mappedBy="categories")
 	 */
-	const ENTITY_CLASSNAME = 'TYPO3\Flow\Tests\Functional\Persistence\Fixtures\Post';
+	protected $posts;
 
+	/**
+	 * @var boolean
+	 */
+	protected $approved = FALSE;
+
+	/**
+	 * @param boolean $approved
+	 */
+	public function setApproved($approved) {
+		$this->approved = $approved;
+	}
 }
+?>
