@@ -149,6 +149,17 @@ class CacheManager {
 	}
 
 	/**
+	 * Flushes a particular cache by its identifier
+	 *
+	 * @param string $identifier Identifies which cache to return
+	 * @return void
+	 * @api
+	 */
+	public function flushCacheByIdentifier($identifier) {
+		$this->getCache($identifier)->flush();
+	}
+
+	/**
 	 * Flushes entries tagged by the specified tag of all registered
 	 * caches.
 	 *
