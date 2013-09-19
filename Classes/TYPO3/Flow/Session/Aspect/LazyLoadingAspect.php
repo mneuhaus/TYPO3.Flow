@@ -17,7 +17,7 @@ use TYPO3\Flow\Annotations as Flow;
  * Adds the aspect of lazy loading to objects with scope session.
  *
  * @Flow\Aspect
- * @Flow\Introduce("filter(TYPO3\Flow\Session\Aspect\SessionObjectMethodsPointcutFilter)", interfaceName = "TYPO3\Flow\Session\Aspect\LazyLoadingProxyInterface")
+ * @Flow\Introduce("filter('TYPO3\Flow\Session\Aspect\SessionObjectMethodsPointcutFilter')", interfaceName = "TYPO3\Flow\Session\Aspect\LazyLoadingProxyInterface")
  * @Flow\Scope("singleton")
  */
 class LazyLoadingAspect {
@@ -65,7 +65,7 @@ class LazyLoadingAspect {
 	 * @param \TYPO3\Flow\Aop\JoinPointInterface $joinPoint The current join point
 	 * @return void
 	 * @fixme The pointcut expression below does not consider the options of the session annotation ‚Äì¬†needs adjustments in the AOP framework
-	 * @Flow\Before("methodAnnotatedWith(TYPO3\Flow\Annotations\Session)")
+	 * @Flow\Before("methodAnnotatedWith('TYPO3\Flow\Annotations\Session')")
 	 */
 	public function initializeSession(\TYPO3\Flow\Aop\JoinPointInterface $joinPoint) {
 		if ($this->session->isStarted() === TRUE) {
@@ -85,7 +85,7 @@ class LazyLoadingAspect {
 	 *
 	 * @param \TYPO3\Flow\Aop\JoinPointInterface $joinPoint The current join point
 	 * @return mixed
-	 * @Flow\Around("filter(TYPO3\Flow\Session\Aspect\SessionObjectMethodsPointcutFilter)")
+	 * @Flow\Around("filter('TYPO3\Flow\Session\Aspect\SessionObjectMethodsPointcutFilter')")
 	 */
 	public function callMethodOnOriginalSessionObject(\TYPO3\Flow\Aop\JoinPointInterface $joinPoint) {
 		$objectName = $this->objectManager->getObjectNameByClassName(get_class($joinPoint->getProxy()));

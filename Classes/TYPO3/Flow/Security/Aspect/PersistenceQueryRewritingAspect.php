@@ -94,7 +94,7 @@ class PersistenceQueryRewritingAspect {
 	/**
 	 * Rewrites the QOM query, by adding appropriate constraints according to the policy
 	 *
-	 * @Flow\Around("setting(TYPO3.Flow.security.enable) && within(TYPO3\Flow\Persistence\QueryInterface) && method(.*->(execute|count)())")
+	 * @Flow\Around("setting('TYPO3.Flow.security.enable') && within('TYPO3\Flow\Persistence\QueryInterface') && method('.*->(execute|count)()')")
 	 * @param \TYPO3\Flow\Aop\JoinPointInterface $joinPoint The current joinpoint
 	 * @return mixed
 	 */
@@ -143,7 +143,7 @@ class PersistenceQueryRewritingAspect {
 	/**
 	 * Checks, if the current policy allows the retrieval of the object fetched by getObjectDataByIdentifier()
 	 *
-	 * @Flow\Around("within(TYPO3\Flow\Persistence\PersistenceManagerInterface) && method(.*->getObjectByIdentifier()) && setting(TYPO3.Flow.security.enable)")
+	 * @Flow\Around("within('TYPO3\Flow\Persistence\PersistenceManagerInterface') && method('.*->getObjectByIdentifier()') && setting('TYPO3.Flow.security.enable')")
 	 * @param \TYPO3\Flow\Aop\JoinPointInterface $joinPoint The current joinpoint
 	 * @return array The object data of the original object, or NULL if access is not permitted
 	 */

@@ -22,7 +22,7 @@ use TYPO3\Flow\Utility\Algorithms;
  *
  * @Flow\Scope("singleton")
  * @Flow\Aspect
- * @Flow\Introduce("TYPO3\Flow\Persistence\Aspect\PersistenceMagicAspect->isEntityOrValueObject", interfaceName="TYPO3\Flow\Persistence\Aspect\PersistenceMagicInterface")
+ * @Flow\Introduce("namedPointcut('TYPO3\Flow\Persistence\Aspect\PersistenceMagicAspect->isEntityOrValueObject')", interfaceName="TYPO3\Flow\Persistence\Aspect\PersistenceMagicInterface")
  */
 class PersistenceMagicAspect {
 
@@ -40,12 +40,12 @@ class PersistenceMagicAspect {
 	protected $persistenceManager;
 
 	/**
-	 * @Flow\Pointcut("classAnnotatedWith(TYPO3\Flow\Annotations\Entity) || classAnnotatedWith(Doctrine\ORM\Mapping\Entity)")
+	 * @Flow\Pointcut("classAnnotatedWith('TYPO3\Flow\Annotations\Entity') || classAnnotatedWith('Doctrine\ORM\Mapping\Entity')")
 	 */
 	public function isEntity() {}
 
 	/**
-	 * @Flow\Pointcut("TYPO3\Flow\Persistence\Aspect\PersistenceMagicAspect->isEntity || classAnnotatedWith(TYPO3\Flow\Annotations\ValueObject)")
+	 * @Flow\Pointcut("namedPointcut('TYPO3\Flow\Persistence\Aspect\PersistenceMagicAspect->isEntity') || classAnnotatedWith('TYPO3\Flow\Annotations\ValueObject')")
 	 */
 	public function isEntityOrValueObject() {}
 
@@ -53,7 +53,7 @@ class PersistenceMagicAspect {
 	 * @var string
 	 * @ORM\Id
 	 * @ORM\Column(length=40)
-	 * @Flow\Introduce("TYPO3\Flow\Persistence\Aspect\PersistenceMagicAspect->isEntityOrValueObject && filter(TYPO3\Flow\Persistence\Doctrine\Mapping\Driver\FlowAnnotationDriver)")
+	 * @Flow\Introduce("namedPointcut('TYPO3\Flow\Persistence\Aspect\PersistenceMagicAspect->isEntityOrValueObject') && filter('TYPO3\Flow\Persistence\Doctrine\Mapping\Driver\FlowAnnotationDriver')")
 	 */
 	protected $Persistence_Object_Identifier;
 
@@ -71,7 +71,7 @@ class PersistenceMagicAspect {
 	 *
 	 * @param \TYPO3\Flow\Aop\JoinPointInterface $joinPoint The current join point
 	 * @return void
-	 * @Flow\Before("TYPO3\Flow\Persistence\Aspect\PersistenceMagicAspect->isEntity && method(.*->(__construct|__clone)()) && filter(TYPO3\Flow\Persistence\Doctrine\Mapping\Driver\FlowAnnotationDriver)")
+	 * @Flow\Before("namedPointcut('TYPO3\Flow\Persistence\Aspect\PersistenceMagicAspect->isEntity') && method('.*->(__construct|__clone)()') && filter('TYPO3\Flow\Persistence\Doctrine\Mapping\Driver\FlowAnnotationDriver')")
 	 */
 	public function generateUuid(JoinPointInterface $joinPoint) {
 		/** @var $proxy \TYPO3\Flow\Persistence\Aspect\PersistenceMagicInterface */
@@ -85,7 +85,7 @@ class PersistenceMagicAspect {
 	 *
 	 * @param \TYPO3\Flow\Aop\JoinPointInterface $joinPoint The current join point
 	 * @return void
-	 * @Flow\Before("classAnnotatedWith(TYPO3\Flow\Annotations\ValueObject) && method(.*->__construct()) && filter(TYPO3\Flow\Persistence\Doctrine\Mapping\Driver\FlowAnnotationDriver)")
+	 * @Flow\Before("classAnnotatedWith('TYPO3\Flow\Annotations\ValueObject') && method('.*->__construct()') && filter('TYPO3\Flow\Persistence\Doctrine\Mapping\Driver\FlowAnnotationDriver')")
 	 */
 	public function generateValueHash(JoinPointInterface $joinPoint) {
 		$proxy = $joinPoint->getProxy();
@@ -116,7 +116,7 @@ class PersistenceMagicAspect {
 	 *
 	 * @param \TYPO3\Flow\Aop\JoinPointInterface $joinPoint
 	 * @return void
-	 * @Flow\AfterReturning("TYPO3\Flow\Persistence\Aspect\PersistenceMagicAspect->isEntityOrValueObject && method(.*->__clone())")
+	 * @Flow\AfterReturning("namedPointcut('TYPO3\Flow\Persistence\Aspect\PersistenceMagicAspect->isEntityOrValueObject') && method('.*->__clone()')")
 	 */
 	public function cloneObject(JoinPointInterface $joinPoint) {
 		$joinPoint->getProxy()->Flow_Persistence_clone = TRUE;

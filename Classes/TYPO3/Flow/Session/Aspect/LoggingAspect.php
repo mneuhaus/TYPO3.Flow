@@ -30,7 +30,7 @@ class LoggingAspect {
 	/**
 	 * Logs calls of start()
 	 *
-	 * @Flow\After("within(TYPO3\Flow\Session\SessionInterface) && method(.*->start())")
+	 * @Flow\After("within('TYPO3\Flow\Session\SessionInterface') && method('.*->start()')")
 	 * @param \TYPO3\Flow\Aop\JoinPointInterface $joinPoint The current joinpoint
 	 * @return mixed The result of the target method if it has not been intercepted
 	 */
@@ -44,7 +44,7 @@ class LoggingAspect {
 	/**
 	 * Logs calls of resume()
 	 *
-	 * @Flow\After("within(TYPO3\Flow\Session\SessionInterface) && method(.*->resume())")
+	 * @Flow\After("within('TYPO3\Flow\Session\SessionInterface') && method('.*->resume()')")
 	 * @param \TYPO3\Flow\Aop\JoinPointInterface $joinPoint The current joinpoint
 	 * @return mixed The result of the target method if it has not been intercepted
 	 */
@@ -70,7 +70,7 @@ class LoggingAspect {
 	/**
 	 * Logs calls of destroy()
 	 *
-	 * @Flow\Before("within(TYPO3\Flow\Session\SessionInterface) && method(.*->destroy())")
+	 * @Flow\Before("within('TYPO3\Flow\Session\SessionInterface') && method('.*->destroy()')")
 	 * @param \TYPO3\Flow\Aop\JoinPointInterface $joinPoint The current joinpoint
 	 * @return mixed The result of the target method if it has not been intercepted
 	 */
@@ -85,7 +85,7 @@ class LoggingAspect {
 	/**
 	 * Logs calls of renewId()
 	 *
-	 * @Flow\Around("within(TYPO3\Flow\Session\SessionInterface) && method(.*->renewId())")
+	 * @Flow\Around("within('TYPO3\Flow\Session\SessionInterface') && method('.*->renewId()')")
 	 * @param \TYPO3\Flow\Aop\JoinPointInterface $joinPoint The current joinpoint
 	 * @return mixed The result of the target method if it has not been intercepted
 	 */
@@ -102,7 +102,7 @@ class LoggingAspect {
 	/**
 	 * Logs calls of collectGarbage()
 	 *
-	 * @Flow\AfterReturning("within(TYPO3\Flow\Session\SessionInterface) && method(.*->collectGarbage())")
+	 * @Flow\AfterReturning("within('TYPO3\Flow\Session\SessionInterface') && method('.*->collectGarbage()')")
 	 * @param \TYPO3\Flow\Aop\JoinPointInterface $joinPoint The current joinpoint
 	 * @return void
 	 */

@@ -58,9 +58,9 @@ class PolicyService implements \TYPO3\Flow\Aop\Pointcut\PointcutFilterInterface 
 	protected $cache;
 
 	/**
-	 * @var \TYPO3\Flow\Security\Policy\PolicyExpressionParser
+	 * @var \TYPO3\Flow\Security\Policy\PolicyExpressionEvaluator
 	 */
-	protected $policyExpressionParser;
+	protected $policyExpressionEvaluator;
 
 	/**
 	 * All configured resources
@@ -132,13 +132,13 @@ class PolicyService implements \TYPO3\Flow\Aop\Pointcut\PointcutFilterInterface 
 	}
 
 	/**
-	 * Injects the policy expression parser
+	 * Injects the policy expression evaluator
 	 *
-	 * @param \TYPO3\Flow\Security\Policy\PolicyExpressionParser $parser
+	 * @param \TYPO3\Flow\Security\Policy\PolicyExpressionEvaluator $evaluator
 	 * @return void
 	 */
-	public function injectPolicyExpressionParser(\TYPO3\Flow\Security\Policy\PolicyExpressionParser $parser) {
-		$this->policyExpressionParser = $parser;
+	public function injectPolicyExpressionEvaluator(\TYPO3\Flow\Security\Policy\PolicyExpressionEvaluator $evaluator) {
+		$this->policyExpressionEvaluator = $evaluator;
 	}
 
 	/**
@@ -180,7 +180,7 @@ class PolicyService implements \TYPO3\Flow\Aop\Pointcut\PointcutFilterInterface 
 			$this->entityResourcesConstraints = $this->cache->get('entityResourcesConstraints');
 		} else {
 			if (array_key_exists('resources', $this->policy) && array_key_exists('entities', $this->policy['resources'])) {
-				$this->entityResourcesConstraints = $this->policyExpressionParser->parseEntityResources($this->policy['resources']['entities']);
+				$this->entityResourcesConstraints = $this->policyExpressionEvaluator->parseEntityResources($this->policy['resources']['entities']);
 			}
 		}
 	}
@@ -585,7 +585,7 @@ class PolicyService implements \TYPO3\Flow\Aop\Pointcut\PointcutFilterInterface 
 			foreach ($acl['methods'] as $resource => $privilege) {
 				if (!isset($parsedMethodResources[$resource])) {
 					$resourceTrace = array();
-					$parsedMethodResources[$resource]['filters'] = $this->policyExpressionParser->parseMethodResources($resource, $this->policy['resources']['methods'], $resourceTrace);
+					$parsedMethodResources[$resource]['filters'] = $this->policyExpressionEvaluator->evaluateMethodResources($resource, $this->policy['resources']['methods'], $resourceTrace);
 					$parsedMethodResources[$resource]['trace'] = $resourceTrace;
 				}
 				$this->filters[$roleIdentifier][$resource] = $parsedMethodResources[$resource]['filters'];

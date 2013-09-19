@@ -49,7 +49,7 @@ class PolicyEnforcementAspect {
 	 * Note: If we have some kind of "run as" functionality in the future, we would have to manipulate the security context
 	 * before calling the policy enforcement interceptor
 	 *
-	 * @Flow\Around("setting(TYPO3.Flow.security.enable) && filter(TYPO3\Flow\Security\Policy\PolicyService)")
+	 * @Flow\Around("setting('TYPO3.Flow.security.enable') && filter('TYPO3\Flow\Security\Policy\PolicyService')")
 	 * @param \TYPO3\Flow\Aop\JoinPointInterface $joinPoint The current joinpoint
 	 * @return mixed The result of the target method if it has not been intercepted
 	 */
