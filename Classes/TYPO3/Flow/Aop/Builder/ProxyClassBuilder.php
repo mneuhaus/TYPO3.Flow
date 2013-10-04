@@ -420,7 +420,7 @@ class ProxyClassBuilder {
 		$proxyClass->addInterfaces($introducedInterfaces);
 
 		foreach ($propertyIntroductions as $propertyIntroduction) {
-			$proxyClass->addProperty($propertyIntroduction->getPropertyName(), 'NULL', $propertyIntroduction->getPropertyVisibility(), $propertyIntroduction->getPropertyDocComment());
+			$proxyClass->addProperty($propertyIntroduction->getPropertyName(), var_export($propertyIntroduction->getInitialValue(), TRUE), $propertyIntroduction->getPropertyVisibility(), $propertyIntroduction->getPropertyDocComment());
 		}
 
 		$proxyClass->getMethod('Flow_Aop_Proxy_buildMethodsAndAdvicesArray')->addPreParentCallCode("\t\tif (method_exists(get_parent_class(\$this), 'Flow_Aop_Proxy_buildMethodsAndAdvicesArray') && is_callable('parent::Flow_Aop_Proxy_buildMethodsAndAdvicesArray')) parent::Flow_Aop_Proxy_buildMethodsAndAdvicesArray();\n");
