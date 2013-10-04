@@ -21,6 +21,7 @@
 $mediaTypesClassPathAndFilename = __DIR__ . '/../Classes/TYPO3/Flow/Utility/MediaTypes.php';
 
 $rawList = file_get_contents('http://svn.apache.org/viewvc/httpd/httpd/branches/2.4.x/docs/conf/mime.types?revision=HEAD&view=co');
+$rawList .= file_get_contents(__DIR__ . '/../Resources/Private/AdditionalMediaTypes.txt');
 
 $mediaTypesAndFileExtensions = array();
 
