@@ -33,7 +33,7 @@ class ProductionExceptionHandler extends AbstractExceptionHandler {
 		}
 		$statusMessage = \TYPO3\Flow\Http\Response::getStatusMessageByCode($statusCode);
 		$referenceCode = ($exception instanceof \TYPO3\Flow\Exception) ? $exception->getReferenceCode() : NULL;
-		if (!headers_sent()) {
+		if (extension_loaded('appserver') || !headers_sent()) {
 			header(sprintf('HTTP/1.1 %s %s', $statusCode, $statusMessage));
 		}
 

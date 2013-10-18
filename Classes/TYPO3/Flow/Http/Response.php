@@ -554,7 +554,7 @@ class Response extends Message implements ResponseInterface {
 	 * @api
 	 */
 	public function sendHeaders() {
-		if (headers_sent() === TRUE) {
+	    if (extension_loaded('appserver') || headers_sent()) {
 			return;
 		}
 		foreach ($this->renderHeaders() as $header) {

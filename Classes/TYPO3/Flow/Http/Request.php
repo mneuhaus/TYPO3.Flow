@@ -352,8 +352,9 @@ class Request extends Message {
 			$this->content = '';
 			return fopen($this->inputStreamUri, 'rb');
 		}
-
-		if ($this->content === NULL) {
+		if ($this->content === NULL && isset($GLOBALS['HTTP_RAW_POST_DATA'])) {
+		    $this->content = $GLOBALS['HTTP_RAW_POST_DATA'];
+		} elseif ($this->content === NULL) {
 			$this->content = file_get_contents($this->inputStreamUri);
 		}
 		return $this->content;
