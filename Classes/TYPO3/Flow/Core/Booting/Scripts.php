@@ -402,6 +402,18 @@ class Scripts {
 			'Flow_TranslationFiles' => self::createFileMonitor('Flow_TranslationFiles', $bootstrap)
 		);
 
+		$configurationManager = $bootstrap->getEarlyInstance('TYPO3\Flow\Configuration\ConfigurationManager');
+		$cacheConfigurations = $configurationManager->getConfiguration('Caches');
+		$affectedFiles = array();
+		foreach ($cacheConfigurations as $cacheName => $cacheConfiguration) {
+			if (isset($cacheConfiguration['affectedFiles'])) {
+				foreach ($cacheConfiguration['affectedFiles'] as $key => $affectedCacheFiles) {
+					$fileMonitors[$cacheName . $key] = self::createFileMonitor($cacheName, $bootstrap);
+					$affectedFiles[$cacheName . $key] = $affectedCacheFiles;
+				}
+			}
+		}
+
 		$context = $bootstrap->getContext();
 		$packageManager = $bootstrap->getEarlyInstance('TYPO3\Flow\Package\PackageManagerInterface');
 		foreach ($packageManager->getActivePackages() as $packageKey => $package) {
@@ -413,6 +425,10 @@ class Scripts {
 			self::monitorDirectoryIfItExists($fileMonitors['Flow_TranslationFiles'], $package->getResourcesPath() . 'Private/Translations/');
 			if ($context->isTesting()) {
 				self::monitorDirectoryIfItExists($fileMonitors['Flow_ClassFiles'], $package->getFunctionalTestsPath());
+			}
+
+			foreach ($affectedFiles as $cacheName => $cacheConfiguration) {
+				self::monitorDirectoryIfItExists($fileMonitors[$cacheName], $package->getPackagePath() . $cacheConfiguration['path']);
 			}
 		}
 
@@ -600,7 +616,7 @@ class Scripts {
 
 		$escapedArguments = '';
 		if ($commandArguments !== array()) {
-			foreach ($commandArguments as $argument=>$argumentValue) {
+			foreach ($commandArguments as $argument => $argumentValue) {
 				$escapedArguments .= ' ' . escapeshellarg('--' . trim($argument));
 				if (trim($argumentValue) !== '') {
 					$escapedArguments .= ' ' . escapeshellarg(trim($argumentValue));
