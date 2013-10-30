@@ -189,6 +189,12 @@ class CacheManager {
 			case 'Flow_TranslationFiles' :
 				$this->flushTranslationCachesByChangedFiles($changedFiles);
 			break;
+
+			default:
+				if (isset($this->cacheConfigurations[$fileMonitorIdentifier])) {
+					$this->flushByConfiguredPathAndPattern($fileMonitorIdentifier, $changedFiles);
+				}
+			break;
 		}
 	}
 
@@ -283,6 +289,32 @@ class CacheManager {
 		$objectConfigurationCache->remove('allAspectClassesUpToDate');
 		$objectConfigurationCache->remove('allCompiledCodeUpToDate');
 		$objectClassesCache->flush();
+	}
+
+	/**
+	 * Flushes cache by monitored files
+	 *
+	 * @param array $cacheName
+	 * @param array $changedFiles A list of full paths to changed files
+	 * @return void
+	 * @see flushSystemCachesByChangedFiles()
+	 */
+	protected function flushByConfiguredPathAndPattern($cacheName, array $changedFiles) {
+		$cacheConfiguration = $this->cacheConfigurations[$cacheName];
+
+		if (!isset($cacheConfiguration['affectedFiles'])) {
+  			return;
+		}
+
+		foreach ($cacheConfiguration['affectedFiles'] as $flush) {
+			$filePattern = trim($flush['filePattern'], '/');
+			foreach (array_keys($changedFiles) as $pathAndFilename) {
+				if (preg_match('/' . $filePattern . '/', $pathAndFilename) === 1) {
+					$this->getCache($cacheName)->flush();
+					return;
+				}
+			}
+		}
 	}
 
 	/**
