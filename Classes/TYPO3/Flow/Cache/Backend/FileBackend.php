@@ -160,7 +160,8 @@ class FileBackend extends SimpleFileBackend implements PhpCapableBackendInterfac
 		}
 		$i = 0;
 		$cacheEntryPathAndFilename = $this->cacheDirectory . $entryIdentifier . $this->cacheEntryFileExtension;
-		while (($result = rename($temporaryCacheEntryPathAndFilename, $cacheEntryPathAndFilename)) === FALSE && $i < 5) {
+		while (($result = rename($temporaryCacheEntryPathAndFilename, $cacheEntryPathAndFilename)) === FALSE && $i < 10) {
+			usleep($i * 10);
 			$i++;
 		}
 		if ($result === FALSE) {
@@ -189,7 +190,11 @@ class FileBackend extends SimpleFileBackend implements PhpCapableBackendInterfac
 		if ($this->isCacheFileExpired($pathAndFilename)) {
 			return FALSE;
 		}
-		$cacheData = file_get_contents($pathAndFilename);
+		$i = 0;
+		while (($cacheData = @file_get_contents($pathAndFilename)) === FALSE && $i < 10) {
+			usleep($i * 10);
+			$i++;
+		}
 		$dataSize = (integer)substr($cacheData, -(self::DATASIZE_DIGITS));
 		return substr($cacheData, 0, $dataSize);
 	}
