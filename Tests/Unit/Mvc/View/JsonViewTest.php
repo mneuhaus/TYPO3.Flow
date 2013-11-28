@@ -414,4 +414,20 @@ class JsonViewTest extends \TYPO3\Flow\Tests\UnitTestCase {
 		$actualResult = $this->view->render();
 		$this->assertEquals($expectedResult, $actualResult);
 	}
+
+	/**
+	 * @test
+	 */
+	public function viewAcceptsJsonEncodingOptions() {
+		$array = array('foo' => array('bar' => 'Baz'));
+
+		$this->view->setOption('jsonEncodingOptions', JSON_FORCE_OBJECT | JSON_PRETTY_PRINT);
+		$this->view->assign('array', $array);
+		$this->view->setVariablesToRender(array('array'));
+
+		$expectedResult = json_encode($array, JSON_FORCE_OBJECT | JSON_PRETTY_PRINT);
+		$actualResult = $this->view->render();
+		$this->assertEquals($expectedResult, $actualResult);
+	}
+
 }
