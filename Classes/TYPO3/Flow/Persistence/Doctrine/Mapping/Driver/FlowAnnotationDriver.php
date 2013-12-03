@@ -613,7 +613,7 @@ class FlowAnnotationDriver implements \Doctrine\Common\Persistence\Mapping\Drive
 						default:
 							if (strpos($propertyMetaData['type'], '\\') !== FALSE) {
 								if ($this->reflectionService->isClassAnnotatedWith($propertyMetaData['type'], 'TYPO3\Flow\Annotations\ValueObject')) {
-									$mapping['type'] = 'object';
+								$mapping['type'] = 'object';
 								} elseif (class_exists($propertyMetaData['type'])) {
 
 									throw \Doctrine\ORM\Mapping\MappingException::missingRequiredOption($property->getName(), 'OneToOne', sprintf('The property "%s" in class "%s" has a non standard data type and doesn\'t define the type of the relation. You have to use one of these annotations: @OneToOne, @OneToMany, @ManyToOne, @ManyToMany', $property->getName(), $className));

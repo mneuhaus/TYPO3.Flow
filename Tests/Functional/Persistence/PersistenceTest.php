@@ -11,13 +11,16 @@ namespace TYPO3\Flow\Tests\Functional\Persistence;
  * The TYPO3 project - inspiring people to share!                         *
  *                                                                        */
 
+use TYPO3\Flow\Tests\Functional\Persistence\Fixtures\CommonObject;
 use TYPO3\Flow\Tests\Functional\Persistence\Fixtures\TestEntity;
 use TYPO3\Flow\Tests\Functional\Persistence\Fixtures\TestEntityRepository;
 use TYPO3\Flow\Tests\Functional\Persistence\Fixtures\TestValueObject;
+use TYPO3\Flow\Tests\Functional\Persistence\Fixtures\ExtendedTypesEntity;
+use TYPO3\Flow\Tests\Functional\Persistence\Fixtures\ExtendedTypesEntityRepository;
 
 /**
  * Testcase for persistence
- *
+
  */
 class PersistenceTest extends \TYPO3\Flow\Tests\FunctionalTestCase {
 
@@ -32,6 +35,11 @@ class PersistenceTest extends \TYPO3\Flow\Tests\FunctionalTestCase {
 	protected $testEntityRepository;
 
 	/**
+	 * @var ExtendedTypesEntityRepository
+	 */
+	protected $extendedTypesEntityRepository;
+
+	/**
 	 * @return void
 	 */
 	public function setUp() {
@@ -39,7 +47,8 @@ class PersistenceTest extends \TYPO3\Flow\Tests\FunctionalTestCase {
 		if (!$this->persistenceManager instanceof \TYPO3\Flow\Persistence\Doctrine\PersistenceManager) {
 			$this->markTestSkipped('Doctrine persistence is not enabled');
 		}
-		$this->testEntityRepository = new TestEntityRepository();
+		$this->testEntityRepository          = new TestEntityRepository();
+		$this->extendedTypesEntityRepository = new ExtendedTypesEntityRepository();
 	}
 
 	/**
@@ -116,10 +125,10 @@ class PersistenceTest extends \TYPO3\Flow\Tests\FunctionalTestCase {
 	 * @test
 	 */
 	public function aClonedEntityWillGetANewIdentifier() {
-		$testEntity = new TestEntity();
+		$testEntity      = new TestEntity();
 		$firstIdentifier = $this->persistenceManager->getIdentifierByObject($testEntity);
 
-		$clonedEntity = clone $testEntity;
+		$clonedEntity     = clone $testEntity;
 		$secondIdentifier = $this->persistenceManager->getIdentifierByObject($clonedEntity);
 		$this->assertNotEquals($firstIdentifier, $secondIdentifier);
 	}
@@ -154,7 +163,7 @@ class PersistenceTest extends \TYPO3\Flow\Tests\FunctionalTestCase {
 		$this->persistenceManager->persistAll();
 
 		$testEntityWithArrayPropertyUnserialized = unserialize($serializedData);
-		$arrayPropertyAfterUnserialize = $testEntityWithArrayPropertyUnserialized->getArrayProperty();
+		$arrayPropertyAfterUnserialize           = $testEntityWithArrayPropertyUnserialized->getArrayProperty();
 
 		$this->assertNotSame($testEntityWithArrayProperty, $testEntityWithArrayPropertyUnserialized);
 		$this->assertEquals('TYPO3', $arrayPropertyAfterUnserialize['some']['nestedArray']['key']->getName(), 'The entity inside the array property has not been updated to the current persistend state after wakeup.');
@@ -165,8 +174,8 @@ class PersistenceTest extends \TYPO3\Flow\Tests\FunctionalTestCase {
 	 */
 	public function newEntitiesWhichAreNotAddedToARepositoryYetAreAlreadyKnownToGetObjectByIdentifier() {
 		$expectedEntity = new TestEntity();
-		$uuid = $this->persistenceManager->getIdentifierByObject($expectedEntity);
-		$actualEntity = $this->persistenceManager->getObjectByIdentifier($uuid, 'TYPO3\Flow\Tests\Functional\Persistence\Fixtures\TestEntity');
+		$uuid           = $this->persistenceManager->getIdentifierByObject($expectedEntity);
+		$actualEntity   = $this->persistenceManager->getObjectByIdentifier($uuid, 'TYPO3\Flow\Tests\Functional\Persistence\Fixtures\TestEntity');
 		$this->assertSame($expectedEntity, $actualEntity);
 	}
 
@@ -198,7 +207,7 @@ class PersistenceTest extends \TYPO3\Flow\Tests\FunctionalTestCase {
 	 */
 	public function alreadyPersistedValueObjectsAreCorrectlyReused() {
 		$valueObject1 = new TestValueObject('sameValue');
-		$testEntity1 = new TestEntity();
+		$testEntity1  = new TestEntity();
 		$testEntity1->setRelatedValueObject($valueObject1);
 
 		$this->testEntityRepository->add($testEntity1);
@@ -207,11 +216,11 @@ class PersistenceTest extends \TYPO3\Flow\Tests\FunctionalTestCase {
 		$this->persistenceManager->clearState();
 
 		$valueObject2 = new TestValueObject('sameValue');
-		$testEntity2 = new TestEntity();
+		$testEntity2  = new TestEntity();
 		$testEntity2->setRelatedValueObject($valueObject2);
 
 		$valueObject3 = new TestValueObject('sameValue');
-		$testEntity3 = new TestEntity();
+		$testEntity3  = new TestEntity();
 		$testEntity3->setRelatedValueObject($valueObject3);
 
 		$this->testEntityRepository->add($testEntity2);
@@ -262,14 +271,14 @@ class PersistenceTest extends \TYPO3\Flow\Tests\FunctionalTestCase {
 		$this->removeExampleEntities();
 		$this->insertExampleEntity();
 		$this->persistenceManager->persistAll();
-		$theObject = $this->testEntityRepository->findOneByName('Flow');
+		$theObject           = $this->testEntityRepository->findOneByName('Flow');
 		$theObjectIdentifier = $this->persistenceManager->getIdentifierByObject($theObject);
 
 		// Here, we completely reset the persistence manager again and work
 		// only with the Object Identifier
 		$this->persistenceManager->clearState();
 
-		$entityManager = $this->objectManager->get('Doctrine\Common\Persistence\ObjectManager');
+		$entityManager    = $this->objectManager->get('Doctrine\Common\Persistence\ObjectManager');
 		$lazyLoadedEntity = $entityManager->getReference('TYPO3\Flow\Tests\Functional\Persistence\Fixtures\TestEntity', $theObjectIdentifier);
 		$lazyLoadedEntity->setName('a');
 		$this->testEntityRepository->update($lazyLoadedEntity);
@@ -316,6 +325,169 @@ class PersistenceTest extends \TYPO3\Flow\Tests\FunctionalTestCase {
 		$this->assertTrue($eventSubscriber->preFlushCalled, 'Assert that preFlush event was triggered.');
 		$this->assertTrue($eventSubscriber->onFlushCalled, 'Assert that onFlush event was triggered.');
 		$this->assertTrue($eventSubscriber->postFlushCalled, 'Assert that postFlush event was triggered.');
+	}
+
+	/**
+	 * @test
+	 * @todo Seems that doctrine converts simple_array and json_array allways to array(). No nullable possible here? Bug in Doctrine?
+	 */
+	public function extendedTypesEntityIsIsReconstitutedWithProperties() {
+
+		$this->markTestIncomplete('Seems that doctrine converts simple_array and json_array allways to array(). No nullable possible here? Bug in Doctrine?');
+
+		$extendedTypesEntity = new ExtendedTypesEntity();
+
+		$this->persistenceManager->add($extendedTypesEntity);
+		$this->persistenceManager->persistAll();
+		$this->persistenceManager->clearState();
+
+		/**  @var ExtendedTypesEntity $persistedExtendedTypesEntity */
+		$persistedExtendedTypesEntity = $this->extendedTypesEntityRepository->findAll()->getFirst();
+
+		$this->assertInstanceOf('TYPO3\Flow\Tests\Functional\Persistence\Fixtures\ExtendedTypesEntity', $persistedExtendedTypesEntity);
+		$this->assertNull($persistedExtendedTypesEntity->getCommonObject(), 'Common Object');
+		$this->assertNull($persistedExtendedTypesEntity->getDateTime(), 'DateTime');
+		$this->assertNull($persistedExtendedTypesEntity->getDateTimeTz(), 'DateTimeTz');
+		$this->assertNull($persistedExtendedTypesEntity->getDate(), 'Date');
+		$this->assertNull($persistedExtendedTypesEntity->getTime(), 'Time');
+
+		/** @todo bug in doctrine? would expect null because annotation of \TYPO3\Flow\Tests\Functional\Persistence\Fixtures\ExtendedTypesEntity::$simpleArray says nullable=true */
+		$this->assertEquals(array(), $persistedExtendedTypesEntity->getSimpleArray(), 'Simple Array');
+		/** @todo bug in doctrine? would expect null because annotation of \TYPO3\Flow\Tests\Functional\Persistence\Fixtures\ExtendedTypesEntity::$jsonArray says nullable=true */
+		$this->assertEquals(array(), $persistedExtendedTypesEntity->getJsonArray(), 'Json Array');
+	}
+
+	/**
+	 * @test
+	 */
+	public function commonObjectPersistedAndIsReconstituted() {
+		$commonObject = new CommonObject();
+		$commonObject->setFoo('foo');
+
+		$extendedTypesEntity = new ExtendedTypesEntity();
+		$extendedTypesEntity->setCommonObject($commonObject);
+
+		$this->persistenceManager->add($extendedTypesEntity);
+		$this->persistenceManager->persistAll();
+		$this->persistenceManager->clearState();
+
+		/**  @var ExtendedTypesEntity $persistedExtendedTypesEntity */
+		$persistedExtendedTypesEntity = $this->extendedTypesEntityRepository->findAll()->getFirst();
+
+		$this->assertInstanceOf('TYPO3\Flow\Tests\Functional\Persistence\Fixtures\ExtendedTypesEntity', $persistedExtendedTypesEntity);
+		$this->assertInstanceOf('TYPO3\Flow\Tests\Functional\Persistence\Fixtures\CommonObject', $persistedExtendedTypesEntity->getCommonObject());
+		$this->assertEquals('foo', $persistedExtendedTypesEntity->getCommonObject()->getFoo());
+	}
+
+	/**
+	 * @test
+	 */
+	public function jsonArrayPersistedAndIsReconstituted() {
+
+		$extendedTypesEntity = new ExtendedTypesEntity();
+		$extendedTypesEntity->setJsonArray(array('foo' => 'bar'));
+
+		$this->persistenceManager->add($extendedTypesEntity);
+		$this->persistenceManager->persistAll();
+		$this->persistenceManager->clearState();
+
+		/**  @var ExtendedTypesEntity $persistedExtendedTypesEntity */
+		$persistedExtendedTypesEntity = $this->extendedTypesEntityRepository->findAll()->getFirst();
+
+		$this->assertInstanceOf('TYPO3\Flow\Tests\Functional\Persistence\Fixtures\ExtendedTypesEntity', $persistedExtendedTypesEntity);
+		$this->assertEquals(array('foo' => 'bar'), $persistedExtendedTypesEntity->getJsonArray());
+	}
+
+	/**
+	 * @test
+	 */
+	public function dateTimePersistedAndIsReconstituted() {
+		$dateTime            = new \DateTime('@1395844656');
+		$extendedTypesEntity = new ExtendedTypesEntity();
+		$extendedTypesEntity->setDateTime($dateTime);
+		$this->persistenceManager->add($extendedTypesEntity);
+		$this->persistenceManager->persistAll();
+		$this->persistenceManager->clearState();
+
+		/**  @var ExtendedTypesEntity $persistedExtendedTypesEntity */
+		$persistedExtendedTypesEntity = $this->extendedTypesEntityRepository->findAll()->getFirst();
+		$this->assertInstanceOf('TYPO3\Flow\Tests\Functional\Persistence\Fixtures\ExtendedTypesEntity', $persistedExtendedTypesEntity);
+		$this->assertInstanceOf('DateTime', $persistedExtendedTypesEntity->getDateTime());
+		$this->assertEquals(1395844656, $persistedExtendedTypesEntity->getDateTime()->getTimestamp());
+	}
+
+	/**
+	 * @test
+	 * @todo Test is incomplete. Seems that doctrine loses timezone data on persisting. Bug in Doctrine?
+	 */
+	public function dateTimeTzPersistedAndIsReconstituted() {
+
+		$this->markTestIncomplete('Test is incomplete. Needs check $this->assertEquals($dateTimeTz,$persistedExtendedTypesEntity->getDateTimeTz()) but it seems that doctrine loses timezone data on persisting. Bug in Doctrine?');
+
+		$dateTimeTz          = new \DateTime('2008-11-16 19:03:30 Europe/Berlin');
+		$extendedTypesEntity = new ExtendedTypesEntity();
+		$extendedTypesEntity->setDateTimeTz($dateTimeTz);
+		$this->persistenceManager->add($extendedTypesEntity);
+		$this->persistenceManager->persistAll();
+		$this->persistenceManager->clearState();
+
+		/**  @var ExtendedTypesEntity $persistedExtendedTypesEntity */
+		$persistedExtendedTypesEntity = $this->extendedTypesEntityRepository->findAll()->getFirst();
+		$this->assertInstanceOf('TYPO3\Flow\Tests\Functional\Persistence\Fixtures\ExtendedTypesEntity', $persistedExtendedTypesEntity);
+	}
+
+	/**
+	 * @test
+	 */
+	public function datePersistedAndIsReconstituted() {
+
+		$dateTime            = new \DateTime('2008-11-16 19:03:30');
+		$extendedTypesEntity = new ExtendedTypesEntity();
+		$extendedTypesEntity->setDate($dateTime);
+		$this->persistenceManager->add($extendedTypesEntity);
+		$this->persistenceManager->persistAll();
+		$this->persistenceManager->clearState();
+
+		/**  @var ExtendedTypesEntity $persistedExtendedTypesEntity */
+		$persistedExtendedTypesEntity = $this->extendedTypesEntityRepository->findAll()->getFirst();
+		$this->assertInstanceOf('TYPO3\Flow\Tests\Functional\Persistence\Fixtures\ExtendedTypesEntity', $persistedExtendedTypesEntity);
+		$this->assertEquals('2008-11-16', $persistedExtendedTypesEntity->getDate()->format('Y-m-d'));
+	}
+
+	/**
+	 * @test
+	 */
+	public function timePersistedAndIsReconstituted() {
+		$dateTime            = new \DateTime('2008-11-16 19:03:30');
+		$extendedTypesEntity = new ExtendedTypesEntity();
+		$extendedTypesEntity->setTime($dateTime);
+		$this->persistenceManager->add($extendedTypesEntity);
+		$this->persistenceManager->persistAll();
+		$this->persistenceManager->clearState();
+
+		/**  @var ExtendedTypesEntity $persistedExtendedTypesEntity */
+		$persistedExtendedTypesEntity = $this->extendedTypesEntityRepository->findAll()->getFirst();
+		$this->assertInstanceOf('TYPO3\Flow\Tests\Functional\Persistence\Fixtures\ExtendedTypesEntity', $persistedExtendedTypesEntity);
+		$this->assertEquals('19:03:30', $persistedExtendedTypesEntity->getTime()->format('H:i:s'));
+	}
+
+	/**
+	 * @test
+	 */
+	public function simpleArrayPersistedAndIsReconstituted() {
+
+		$extendedTypesEntity = new ExtendedTypesEntity();
+		$extendedTypesEntity->setSimpleArray(array('foo' => 'bar'));
+
+		$this->persistenceManager->add($extendedTypesEntity);
+		$this->persistenceManager->persistAll();
+		$this->persistenceManager->clearState();
+
+		/**  @var ExtendedTypesEntity $persistedExtendedTypesEntity */
+		$persistedExtendedTypesEntity = $this->extendedTypesEntityRepository->findAll()->getFirst();
+
+		$this->assertInstanceOf('TYPO3\Flow\Tests\Functional\Persistence\Fixtures\ExtendedTypesEntity', $persistedExtendedTypesEntity);
+		$this->assertEquals(array('bar'), $persistedExtendedTypesEntity->getSimpleArray());
 	}
 
 	/**
