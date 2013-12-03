@@ -14,6 +14,7 @@ namespace TYPO3\Flow\Http;
 use TYPO3\Flow\Mvc\ResponseInterface;
 
 use TYPO3\Flow\Annotations as Flow;
+use TYPO3\Flow\Utility\MediaTypes;
 
 /**
  * Represents a HTTP Response
@@ -111,7 +112,7 @@ class Response extends Message implements ResponseInterface {
 	public function __construct(Response $parentResponse = NULL) {
 		$this->headers = new Headers();
 		$this->headers->set('X-Flow-Powered', 'Flow/' . FLOW_VERSION_BRANCH);
-		$this->headers->set('Content-Type', 'text/html; charset=' . $this->charset);
+		$this->headers->set('Content-Type', MediaTypes::getMeditTypeFromRequestUri($_SERVER['REQUEST_URI']) . '; charset=' . $this->charset);
 		$this->parentResponse = $parentResponse;
 	}
 
