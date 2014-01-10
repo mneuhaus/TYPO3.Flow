@@ -11,12 +11,22 @@ namespace TYPO3\Flow\Persistence;
  * The TYPO3 project - inspiring people to share!                         *
  *                                                                        */
 
+use TYPO3\Flow\Exception;
+use TYPO3\Flow\Annotations as Flow;
+use TYPO3\Flow\Reflection\ObjectAccess;
+
 /**
  * The Flow Persistence Manager base class
  *
  * @api
  */
 abstract class AbstractPersistenceManager implements \TYPO3\Flow\Persistence\PersistenceManagerInterface {
+
+	/**
+	 * @Flow\Inject
+	 * @var \TYPO3\Flow\Reflection\ReflectionService
+	 */
+	protected $reflectionService;
 
 	/**
 	 * @var array
@@ -67,8 +77,37 @@ abstract class AbstractPersistenceManager implements \TYPO3\Flow\Persistence\Per
 	 * @return void
 	 */
 	public function registerNewObject(\TYPO3\Flow\Persistence\Aspect\PersistenceMagicInterface $object) {
-		$identifier = \TYPO3\Flow\Reflection\ObjectAccess::getProperty($object, 'Persistence_Object_Identifier', TRUE);
-		$this->newObjects[$identifier] = $object;
+		$identifierKey = $this->generateIdentifierIndex($this->reflectObjectIdentity($object));
+		$this->newObjects[$identifierKey] = $object;
+	}
+
+	/**
+	 * @param Aspect\PersistenceMagicInterface $object
+	 * @return array
+	 * @throws \TYPO3\Flow\Exception
+	 */
+	public function reflectObjectIdentity(\TYPO3\Flow\Persistence\Aspect\PersistenceMagicInterface $object) {
+		$possibleClassSchema = $this->reflectionService->getClassSchema($object);
+		if ($possibleClassSchema === NULL) {
+			throw new Exception('No class schema fould for class "' . get_class($object) . '"', 1394203827);
+		}
+
+		$identifier                 = array();
+		$possibleIdentityProperties = array_keys($possibleClassSchema->getIdentityProperties());
+		foreach ($possibleIdentityProperties as $identityProperty) {
+			$identifier[$identityProperty] = ObjectAccess::getProperty($object, $identityProperty, TRUE);
+		}
+		return $identifier;
+	}
+
+	/**
+	 * Returns string represantation of given identifier
+	 *
+	 * @param mixed $identifier
+	 * @return string
+	 */
+	public static function generateIdentifierIndex($identifier){
+		return serialize($identifier);
 	}
 
 	/**

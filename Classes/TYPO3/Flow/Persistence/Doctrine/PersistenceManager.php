@@ -12,6 +12,8 @@ namespace TYPO3\Flow\Persistence\Doctrine;
  *                                                                        */
 
 use TYPO3\Flow\Annotations as Flow;
+use TYPO3\Flow\Reflection\ClassSchema;
+use TYPO3\Flow\Reflection\ObjectAccess;
 
 /**
  * Flow's Doctrine PersistenceManager
@@ -38,12 +40,6 @@ class PersistenceManager extends \TYPO3\Flow\Persistence\AbstractPersistenceMana
 	 * @var \TYPO3\Flow\Validation\ValidatorResolver
 	 */
 	protected $validatorResolver;
-
-	/**
-	 * @Flow\Inject
-	 * @var \TYPO3\Flow\Reflection\ReflectionService
-	 */
-	protected $reflectionService;
 
 	/**
 	 * Initializes the persistence manager, called by Flow.
@@ -81,7 +77,7 @@ class PersistenceManager extends \TYPO3\Flow\Persistence\AbstractPersistenceMana
 			$this->validateObject($entity, $validatedInstancesContainer);
 		}
 
-		\TYPO3\Flow\Reflection\ObjectAccess::setProperty($unitOfWork, 'entityInsertions', $entityInsertions, TRUE);
+		ObjectAccess::setProperty($unitOfWork, 'entityInsertions', $entityInsertions, TRUE);
 
 		foreach ($unitOfWork->getScheduledEntityUpdates() AS $entity) {
 			$this->validateObject($entity, $validatedInstancesContainer);
@@ -159,31 +155,45 @@ class PersistenceManager extends \TYPO3\Flow\Persistence\AbstractPersistenceMana
 	}
 
 	/**
-	 * Returns the (internal) identifier for the object, if it is known to the
-	 * backend. Otherwise NULL is returned.
+	 * Returns the persistence identifier of an object
 	 *
 	 * Note: this returns an identifier even if the object has not been
 	 * persisted in case of AOP-managed entities. Use isNewObject() if you need
 	 * to distinguish those cases.
 	 *
 	 * @param object $object
-	 * @return mixed The identifier for the object if it is known, or NULL
+	 * @return mixed|NULL if object has single identifier it will return this simple type. if object contains more then onw id it returns an assoc array with those ids
+	 * @throws \TYPO3\Flow\Exception
 	 * @api
-	 * @todo improve try/catch block
 	 */
 	public function getIdentifierByObject($object) {
-		if (property_exists($object, 'Persistence_Object_Identifier')) {
-			$identifierCandidate = \TYPO3\Flow\Reflection\ObjectAccess::getProperty($object, 'Persistence_Object_Identifier', TRUE);
-			if ($identifierCandidate !== NULL) {
-				return $identifierCandidate;
+
+		$possibleClassSchema = $this->reflectionService->getClassSchema($object);
+
+		if (!$possibleClassSchema instanceof ClassSchema) {
+			throw new \TYPO3\Flow\Exception('No class schema fould for class "' . get_class($object) . '"', 1394203828);
+		}
+
+		$possibleIdentityProperties = array_keys($possibleClassSchema->getIdentityProperties());
+
+		if ($this->entityManager->contains($object)) {
+			/** @var array $identifier */
+			$identifier = $this->entityManager->getUnitOfWork()->getEntityIdentifier($object);
+		} else {
+			$identifier = array();
+			foreach ($possibleIdentityProperties as $identityProperty) {
+				$identifier[$identityProperty] = ObjectAccess::getProperty($object, $identityProperty, TRUE);
 			}
 		}
-		if ($this->entityManager->contains($object)) {
-			try {
-				return current($this->entityManager->getUnitOfWork()->getEntityIdentifier($object));
-			} catch (\Doctrine\ORM\ORMException $e) {}
+
+		if (count($identifier) > 1) {
+			return $identifier;
+		} elseif(count($identifier) === 1) {
+			return current($identifier);
 		}
+
 		return NULL;
+
 	}
 
 	/**
@@ -201,15 +211,21 @@ class PersistenceManager extends \TYPO3\Flow\Persistence\AbstractPersistenceMana
 		if ($objectType === NULL) {
 			throw new \RuntimeException('Using only the identifier is not supported by Doctrine 2. Give classname as well or use repository to query identifier.', 1296646103);
 		}
-		if (isset($this->newObjects[$identifier])) {
-			return $this->newObjects[$identifier];
+
+		$identifierKey = self::generateIdentifierIndex($identifier);
+
+		if (isset($this->newObjects[$identifierKey])) {
+			return $this->newObjects[$identifierKey];
 		}
+
 		if ($useLazyLoading === TRUE) {
 			return $this->entityManager->getReference($objectType, $identifier);
 		} else {
 			return $this->entityManager->find($objectType, $identifier);
 		}
 	}
+
+
 
 	/**
 	 * Return a query object for the given type.
