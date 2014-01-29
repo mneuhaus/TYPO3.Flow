@@ -101,7 +101,7 @@ class ResponseTest extends \TYPO3\Flow\Tests\UnitTestCase {
 
 		$this->assertInstanceOf('TYPO3\Flow\Http\Cookie', $response->getCookie('tg'));
 		$this->assertEquals('426148', $response->getCookie('tg')->getValue());
-		$this->assertEquals(1665942816, $response->getCookie('tg')->getExpires());
+		$this->assertEquals(1665942816, $response->getCookie('tg')->getExpires()->getTimestamp());
 
 		$this->assertInstanceOf('TYPO3\Flow\Http\Cookie', $response->getCookie('dmvk'));
 		$this->assertEquals('507d9f20317a5', $response->getCookie('dmvk')->getValue());

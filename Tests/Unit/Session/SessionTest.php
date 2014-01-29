@@ -427,7 +427,7 @@ class SessionTest extends \TYPO3\Flow\Tests\UnitTestCase {
 		$sessionIdentifier = $session->getId();
 		$session->close();
 
-		$requestCookie = new Cookie($this->settings['session']['name'], $sessionIdentifier, 0, 100, 'other', '/');
+		$requestCookie = new Cookie($this->settings['session']['name'], $sessionIdentifier, NULL, 100, 'other', '/');
 		$this->httpRequest->setCookie($requestCookie);
 
 		$session = new Session();

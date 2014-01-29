@@ -119,15 +119,12 @@ class CookieTest extends \TYPO3\Flow\Tests\UnitTestCase {
 	/**
 	 * @test
 	 */
-	public function getExpiresAlwaysReturnsAUnixTimestamp() {
-		$cookie = new Cookie('foo', 'bar', 1345110803);
-		$this->assertSame(1345110803, $cookie->getExpires());
-
+	public function getExpiresAlwaysReturnsACorrectDateTimeObjectOrNull() {
 		$cookie = new Cookie('foo', 'bar', \DateTime::createFromFormat('U', 1345110803));
-		$this->assertSame(1345110803, $cookie->getExpires());
+		$this->assertSame(1345110803, $cookie->getExpires()->getTimestamp());
 
 		$cookie = new Cookie('foo', 'bar');
-		$this->assertSame(0, $cookie->getExpires());
+		$this->assertNull($cookie->getExpires());
 	}
 
 	/**
@@ -145,7 +142,7 @@ class CookieTest extends \TYPO3\Flow\Tests\UnitTestCase {
 		$cookie = new Cookie('foo', 'bar');
 		$this->assertSame(NULL, $cookie->getMaximumAge());
 
-		$cookie = new Cookie('foo', 'bar', 0, 120);
+		$cookie = new Cookie('foo', 'bar', NULL, 120);
 		$this->assertSame(120, $cookie->getMaximumAge());
 	}
 
@@ -170,14 +167,14 @@ class CookieTest extends \TYPO3\Flow\Tests\UnitTestCase {
 	 * @expectedException \InvalidArgumentException
 	 */
 	public function constructorThrowsExceptionOnInvalidDomain($domain) {
-		new Cookie('foo', 'bar', 0, NULL, $domain);
+		new Cookie('foo', 'bar', NULL, NULL, $domain);
 	}
 
 	/**
 	 * @test
 	 */
 	public function getDomainReturnsDomain() {
-		$cookie = new Cookie('foo', 'bar', 0, NULL, 'flow.typo3.org');
+		$cookie = new Cookie('foo', 'bar', NULL, NULL, 'flow.typo3.org');
 		$this->assertSame('flow.typo3.org', $cookie->getDomain());
 	}
 
@@ -200,7 +197,7 @@ class CookieTest extends \TYPO3\Flow\Tests\UnitTestCase {
 	 * @expectedException \InvalidArgumentException
 	 */
 	public function constructorThrowsExceptionOnInvalidPath($path) {
-		new Cookie('foo', 'bar', 0, NULL, NULL, $path);
+		new Cookie('foo', 'bar', NULL, NULL, NULL, $path);
 	}
 
 	/**
@@ -210,7 +207,7 @@ class CookieTest extends \TYPO3\Flow\Tests\UnitTestCase {
 		$cookie = new Cookie('foo', 'bar');
 		$this->assertSame('/', $cookie->getPath());
 
-		$cookie = new Cookie('foo', 'bar', 0, NULL, 'flow.typo3.org', '/about/us');
+		$cookie = new Cookie('foo', 'bar', NULL, NULL, 'flow.typo3.org', '/about/us');
 		$this->assertSame('/about/us', $cookie->getPath());
 	}
 
@@ -221,7 +218,7 @@ class CookieTest extends \TYPO3\Flow\Tests\UnitTestCase {
 		$cookie = new Cookie('foo', 'bar');
 		$this->assertFalse($cookie->isSecure());
 
-		$cookie = new Cookie('foo', 'bar', 0, NULL, 'typo3.org', '/', TRUE);
+		$cookie = new Cookie('foo', 'bar', NULL, NULL, 'typo3.org', '/', TRUE);
 		$this->assertTrue($cookie->isSecure());
 	}
 
@@ -232,7 +229,7 @@ class CookieTest extends \TYPO3\Flow\Tests\UnitTestCase {
 		$cookie = new Cookie('foo', 'bar');
 		$this->assertTrue($cookie->isHttpOnly());
 
-		$cookie = new Cookie('foo', 'bar', 0, NULL, 'typo3.org', '/', FALSE, FALSE);
+		$cookie = new Cookie('foo', 'bar', NULL, NULL, 'typo3.org', '/', FALSE, FALSE);
 		$this->assertFalse($cookie->isHttpOnly());
 	}
 
@@ -246,7 +243,7 @@ class CookieTest extends \TYPO3\Flow\Tests\UnitTestCase {
 		$cookie->expire();
 		$this->assertTrue($cookie->isExpired());
 
-		$cookie = new Cookie('foo', 'bar', 500);
+		$cookie = new Cookie('foo', 'bar', \DateTime::createFromFormat('U', 500));
 		$this->assertTrue($cookie->isExpired());
 	}
 
@@ -264,18 +261,17 @@ class CookieTest extends \TYPO3\Flow\Tests\UnitTestCase {
 			array(new Cookie('MyFoo25', 'bar'), 'MyFoo25=bar; Path=/; HttpOnly'),
 			array(new Cookie('MyFoo25', TRUE), 'MyFoo25=1; Path=/; HttpOnly'),
 			array(new Cookie('MyFoo25', FALSE), 'MyFoo25=0; Path=/; HttpOnly'),
-			array(new Cookie('foo', 'bar', 0), 'foo=bar; Path=/; HttpOnly'),
+			array(new Cookie('foo', 'bar', NULL), 'foo=bar; Path=/; HttpOnly'),
 			array(new Cookie('MyFoo25'), 'MyFoo25=; Path=/; HttpOnly'),
 			array(new Cookie('foo', 'It\'s raining cats and dogs.'), 'foo=It%27s+raining+cats+and+dogs.; Path=/; HttpOnly'),
 			array(new Cookie('foo', 'Some characters, like "double quotes" must be escaped.'), 'foo=Some+characters%2C+like+%22double+quotes%22+must+be+escaped.; Path=/; HttpOnly'),
-			array(new Cookie('foo', 'bar', 1345108546), 'foo=bar; Expires=Thu, 16-Aug-2012 09:15:46 GMT; Path=/; HttpOnly'),
-			array(new Cookie('foo', 'bar', \DateTime::createFromFormat('U', 1345108546)), 'foo=bar; Expires=Thu, 16-Aug-2012 09:15:46 GMT; Path=/; HttpOnly'),
-			array(new Cookie('foo', 'bar', 0, NULL, 'flow.typo3.org'), 'foo=bar; Domain=flow.typo3.org; Path=/; HttpOnly'),
-			array(new Cookie('foo', 'bar', 0, NULL, 'flow.typo3.org', '/about'), 'foo=bar; Domain=flow.typo3.org; Path=/about; HttpOnly'),
-			array(new Cookie('foo', 'bar', 0, NULL, 'typo3.org', '/', TRUE), 'foo=bar; Domain=typo3.org; Path=/; Secure; HttpOnly'),
-			array(new Cookie('foo', 'bar', 0, NULL, 'typo3.org', '/', TRUE, FALSE), 'foo=bar; Domain=typo3.org; Path=/; Secure'),
-			array(new Cookie('foo', 'bar', 0, 3600), 'foo=bar; Max-Age=3600; Path=/; HttpOnly'),
-			array($expiredCookie, 'foo=bar; Expires=Thu, 27-May-1976 12:00:00 GMT; Path=/; HttpOnly')
+			array(new Cookie('foo', 'bar', \DateTime::createFromFormat('U', 1345108546)), 'foo=bar; Expires=Thu, 16 Aug 2012 09:15:46 +0000; Path=/; HttpOnly'),
+			array(new Cookie('foo', 'bar', NULL, NULL, 'flow.typo3.org'), 'foo=bar; Domain=flow.typo3.org; Path=/; HttpOnly'),
+			array(new Cookie('foo', 'bar', NULL, NULL, 'flow.typo3.org', '/about'), 'foo=bar; Domain=flow.typo3.org; Path=/about; HttpOnly'),
+			array(new Cookie('foo', 'bar', NULL, NULL, 'typo3.org', '/', TRUE), 'foo=bar; Domain=typo3.org; Path=/; Secure; HttpOnly'),
+			array(new Cookie('foo', 'bar', NULL, NULL, 'typo3.org', '/', TRUE, FALSE), 'foo=bar; Domain=typo3.org; Path=/; Secure'),
+			array(new Cookie('foo', 'bar', NULL, 3600), 'foo=bar; Max-Age=3600; Path=/; HttpOnly'),
+			array($expiredCookie, 'foo=bar; Expires=Thu, 27 May 1976 12:00:00 +0000; Path=/; HttpOnly')
 		);
 	}
 
@@ -315,7 +311,7 @@ class CookieTest extends \TYPO3\Flow\Tests\UnitTestCase {
 	 */
 	public function createCookieFromRawParsesExpiryDateCorrectly() {
 		$cookie = Cookie::createFromRawSetCookieHeader('ckName=someValue; Expires=Sun, 16-Oct-2022 17:53:36 GMT');
-		$this->assertSame(1665942816, $cookie->getExpires());
+		$this->assertSame(1665942816, $cookie->getExpires()->getTimestamp());
 	}
 
 	/**
@@ -323,7 +319,7 @@ class CookieTest extends \TYPO3\Flow\Tests\UnitTestCase {
 	 */
 	public function createCookieFromRawAssumesExpiryDateZeroIfItCannotBeParsed() {
 		$cookie = Cookie::createFromRawSetCookieHeader('ckName=someValue; Expires=trythis');
-		$this->assertSame(0, $cookie->getExpires());
+		$this->assertNull($cookie->getExpires());
 	}
 
 	/**
