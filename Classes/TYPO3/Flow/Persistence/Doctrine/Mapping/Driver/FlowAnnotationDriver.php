@@ -513,6 +513,11 @@ class FlowAnnotationDriver implements \Doctrine\Common\Persistence\Mapping\Drive
 					$mapping['orphanRemoval'] = TRUE;
 				}
 				$mapping['fetch'] = $this->getFetchMode($className, $oneToOneAnnotation->fetch);
+
+				if ($this->reader->getPropertyAnnotation($property, 'Doctrine\ORM\Mapping\Id') !== NULL) {
+					$mapping['id'] = TRUE;
+				}
+
 				$metadata->mapOneToOne($mapping);
 			} elseif ($oneToManyAnnotation = $this->reader->getPropertyAnnotation($property, 'Doctrine\ORM\Mapping\OneToMany')) {
 				$mapping['mappedBy'] = $oneToManyAnnotation->mappedBy;
@@ -550,6 +555,11 @@ class FlowAnnotationDriver implements \Doctrine\Common\Persistence\Mapping\Drive
 				}
 				$mapping['inversedBy'] = $manyToOneAnnotation->inversedBy;
 				$mapping['fetch'] = $this->getFetchMode($className, $manyToOneAnnotation->fetch);
+
+				if ($this->reader->getPropertyAnnotation($property, 'Doctrine\ORM\Mapping\Id') !== NULL) {
+					$mapping['id'] = TRUE;
+				}
+
 				$metadata->mapManyToOne($mapping);
 			} elseif ($manyToManyAnnotation = $this->reader->getPropertyAnnotation($property, 'Doctrine\ORM\Mapping\ManyToMany')) {
 				if ($manyToManyAnnotation->targetEntity) {
