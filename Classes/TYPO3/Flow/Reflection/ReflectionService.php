@@ -692,6 +692,25 @@ class ReflectionService {
 	}
 
 	/**
+	 * Returns all class names of classes containing at least one method annotated
+	 * with the given annotation class
+	 *
+	 * Returns all methods of the specified class annotated with the specified
+	 * annotation class
+	 *
+	 * @param string $className
+	 * @param string $annotationClassName The annotation class name for a method annotation
+	 * @return array An array of class names
+	 */
+	public function getClassMethodsAnnotatedWith($className, $annotationClassName) {
+		if (!$this->initialized) {
+			$this->initialize();
+		}
+
+		return isset($this->classesByMethodAnnotations[$annotationClassName][$className]) ? $this->classesByMethodAnnotations[$annotationClassName][$className] : array();
+	}
+
+	/**
 	 * Tells if the specified method is final or not
 	 *
 	 * @param string $className Name of the class containing the method
@@ -1208,7 +1227,12 @@ class ReflectionService {
 			$className = ($classNameOrObject[0] === '\\' ? substr($classNameOrObject, 1) : $classNameOrObject);
 		}
 		if (!isset($this->classSchemata[$className])) {
-			$this->classSchemata[$className] = $this->classSchemataRuntimeCache->get(str_replace('\\', '_', $className));
+			$classSchema = $this->classSchemataRuntimeCache->get(str_replace('\\', '_', $className));
+			if ($classSchema instanceof \TYPO3\Flow\Reflection\ClassSchema) {
+				$this->classSchemata[$className] = $classSchema;
+			} else {
+				return NULL;
+			}
 		}
 
 		return is_object($this->classSchemata[$className]) ? $this->classSchemata[$className] : NULL;
@@ -1353,7 +1377,10 @@ class ReflectionService {
 			$this->classReflectionData[$className][self::DATA_CLASS_METHODS][$methodName][self::DATA_METHOD_VISIBILITY] = $visibility;
 
 			foreach ($this->getMethodAnnotations($className, $methodName) as $methodAnnotation) {
-				$this->classesByMethodAnnotations[get_class($methodAnnotation)][$className] = $methodName;
+				if (!isset($this->classesByMethodAnnotations[get_class($methodAnnotation)][$className])) {
+					$this->classesByMethodAnnotations[get_class($methodAnnotation)][$className] = array();
+				}
+				$this->classesByMethodAnnotations[get_class($methodAnnotation)][$className][] = $methodName;
 			}
 
 			$paramAnnotations = $method->isTaggedWith('param') ? $method->getTagValues('param') : array();
@@ -1913,9 +1940,9 @@ class ReflectionService {
 
 		if (isset($reflectionData['classesByMethodAnnotations'])) {
 			foreach ($reflectionData['classesByMethodAnnotations'] as $annotationClassName => $classNames) {
-				foreach ($classNames as $index => $className) {
+				foreach ($classNames as $className => $methods) {
 					if (substr($className, 0, $packageNamespaceLength) !== $packageNamespace) {
-						unset($reflectionData['classesByMethodAnnotations'][$annotationClassName][$index]);
+						unset($reflectionData['classesByMethodAnnotations'][$annotationClassName][$className]);
 					}
 				}
 			}

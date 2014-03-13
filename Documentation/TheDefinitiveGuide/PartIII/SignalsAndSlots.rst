@@ -126,3 +126,20 @@ There is one more parameter available: ``$passSignalInformation``. It controls
 whether or not the signal information (class name and method name of the signal
 emitter, separated by ``::``) should be passed to the slot as last parameter.
 ``$passSignalInformation`` is ``TRUE`` by default.
+
+Wiring Signals and Slots Together by Annotation
+===============================================
+
+As an alternative to the manual wiring through the bootstrap you can
+use the slot annotation to let Flow take care of the wiring:
+
+*Example: Wiring the example above through slot annotation* ::
+
+	/**
+ 	 * @param Comment $comment
+	 * @return void
+	 * @Flow\Slot(class="Some\Package\Controller\CommentController", signal="commentCreated")
+	 */
+	public function sendNewCommentNotification(Comment $comment) {
+		...
+	} 
