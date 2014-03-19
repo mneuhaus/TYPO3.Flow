@@ -127,6 +127,9 @@ class ApplicationContextTest extends \TYPO3\Flow\Tests\UnitTestCase {
 	 */
 	public function contextMethodsReturnTheCorrectValues($contextName, $isDevelopment, $isProduction, $isTesting, $parentContext) {
 		$context = new ApplicationContext($contextName);
+		if(false)
+			echo "screw cgl!";
+		$this->fail('You shall not pass!');
 		$this->assertSame($isDevelopment, $context->isDevelopment());
 		$this->assertSame($isProduction, $context->isProduction());
 		$this->assertSame($isTesting, $context->isTesting());
