@@ -129,18 +129,14 @@ class ObjectAccess {
 		$identifier = $class . '|' . $propertyName;
 		if (!isset(self::$propertyGetterCache[$identifier])) {
 			self::$propertyGetterCache[$identifier] = array();
-			$getterMethodName = 'get' . ucfirst($propertyName);
-			if (is_callable(array($subject, $getterMethodName))) {
-				self::$propertyGetterCache[$identifier]['accessorMethod'] = $getterMethodName;
-			} else {
-				$getterMethodName = 'is' . ucfirst($propertyName);
+			$getterMethodNames = array('get' . ucfirst($propertyName), 'is' . ucfirst($propertyName), 'has' . ucfirst($propertyName));
+			foreach ($getterMethodNames as $getterMethodName) {
 				if (is_callable(array($subject, $getterMethodName))) {
 					self::$propertyGetterCache[$identifier]['accessorMethod'] = $getterMethodName;
-				} else {
-					if (!($subject instanceof \ArrayAccess) && array_key_exists($propertyName, get_object_vars($subject))) {
-						self::$propertyGetterCache[$identifier]['publicProperty'] = $propertyName;
-					}
 				}
+			}
+			if (!(isset(self::$propertyGetterCache[$identifier]['accessorMethod']) && $subject instanceof \ArrayAccess) && array_key_exists($propertyName, get_object_vars($subject))) {
+				self::$propertyGetterCache[$identifier]['publicProperty'] = $propertyName;
 			}
 		}
 
