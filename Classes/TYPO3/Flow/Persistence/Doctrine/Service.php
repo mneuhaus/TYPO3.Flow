@@ -185,7 +185,10 @@ class Service {
 		$configuration->setMigrationsDirectory(\TYPO3\Flow\Utility\Files::concatenatePaths(array(FLOW_PATH_DATA, 'DoctrineMigrations')));
 		$configuration->setMigrationsTableName('flow_doctrine_migrationstatus');
 
-		$configuration->createMigrationTable();
+		$migrationTableCreated = $configuration->createMigrationTable();
+		if ($migrationTableCreated === TRUE) {
+			$this->emitMigrationTableWasCreated();
+		}
 
 		$databasePlatformName = $this->getDatabasePlatformName();
 		foreach ($this->packageManager->getActivePackages() as $package) {
@@ -199,6 +202,13 @@ class Service {
 		}
 
 		return $configuration;
+	}
+
+	/**
+	 * @return void
+	 * @Flow\Signal
+	 */
+	protected function emitMigrationTableWasCreated() {
 	}
 
 	/**
