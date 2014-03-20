@@ -154,6 +154,8 @@ class CoreCommandController extends \TYPO3\Flow\Cli\CommandController {
 		$this->aopProxyClassBuilder->build();
 		$this->dependencyInjectionProxyClassBuilder->build();
 
+		$this->emitAdditionalProxyClassBuilder();
+
 		$classCount = $this->proxyClassCompiler->compile();
 
 		$dataTemporaryPath = FLOW_PATH_DATA . 'Temporary/' . (string)$this->bootstrap->getContext();
@@ -300,6 +302,16 @@ class CoreCommandController extends \TYPO3\Flow\Cli\CommandController {
 	 */
 	protected function emitFinishedCompilationRun($classCount) {
 		$this->signalSlotDispatcher->dispatch(__CLASS__, 'finishedCompilationRun', array($classCount));
+	}
+
+	/**
+	 * Signals the opportunity to do additional proxy building
+	 *
+	 * @return void
+	 * @Flow\Signal
+	 */
+	protected function emitAdditionalProxyClassBuilder() {
+		$this->signalSlotDispatcher->dispatch(__CLASS__, 'additionalProxyClassBuilder');
 	}
 
 	/**
