@@ -54,10 +54,10 @@ class Cookie {
 	protected $value;
 
 	/**
-	 * Unix timestamp of the expiration date / time or 0 for "session" expiration (RFC 6265, 4.1.2.1)
-	 * @var integer
+	 * DateTime representation of the expiration date / time or NULL for "session" expiration
+	 * @var \DateTime
 	 */
-	protected $expiresTimestamp;
+	protected $expires;
 
 	/**
 	 * Number of seconds until the cookie expires (RFC 6265, 4.1.2.2)
@@ -91,7 +91,7 @@ class Cookie {
 	 *
 	 * @param string $name The cookie name as a valid token (RFC 2616)
 	 * @param mixed $value The value to store in the cookie. Must be possible to cast into a string.
-	 * @param integer|DateTime $expires Date and time after which this cookie expires.
+	 * @param \DateTime $expires Date and time on which this cookie expires.
 	 * @param integer $maximumAge Number of seconds until the cookie expires.
 	 * @param string $domain The host to which the user agent will send this cookie
 	 * @param string $path The path describing the scope of this cookie
@@ -100,15 +100,15 @@ class Cookie {
 	 * @api
 	 * @throws \InvalidArgumentException
 	 */
-	public function __construct($name, $value = NULL, $expires = 0, $maximumAge = NULL,  $domain = NULL, $path = '/', $secure = FALSE, $httpOnly = TRUE) {
+	public function __construct($name, $value = NULL, $expires = NULL, $maximumAge = NULL,  $domain = NULL, $path = '/', $secure = FALSE, $httpOnly = TRUE) {
 		if (preg_match(self::PATTERN_TOKEN, $name) !== 1) {
 			throw new \InvalidArgumentException('The parameter "name" passed to the Cookie constructor must be a valid token as per RFC 2616, Section 2.2.', 1345101977);
 		}
-		if ($expires instanceof \Datetime) {
-			$expires = $expires->getTimestamp();
-		}
-		if (!is_integer($expires)) {
-			throw new \InvalidArgumentException('The parameter "expires" passed to the Cookie constructor must be a unix timestamp or a DateTime object.', 1345108785);
+		if (is_integer($expires)) {
+			// @todo remove exception and add proper typehint for next major version
+			throw new \InvalidArgumentException('The parameter "expires" passed to the Cookie constructor must be a DateTime object, not an integer. Hint: use DateTime::createFromFormat(\'U\', (string)$expires) to adjust your code.', 1393237157);
+		} elseif ($expires !== NULL && !$expires instanceof \DateTime) {
+			throw new \InvalidArgumentException('The parameter "expires" passed to the Cookie constructor must be a DateTime object.', 1345108785);
 		}
 		if ($maximumAge !== NULL && !is_integer($maximumAge)) {
 			throw new \InvalidArgumentException('The parameter "maximumAge" passed to the Cookie constructor must be an integer value.', 1345108786);
@@ -122,7 +122,7 @@ class Cookie {
 
 		$this->name = $name;
 		$this->value = $value;
-		$this->expiresTimestamp = $expires;
+		$this->expires = $expires;
 		$this->maximumAge = $maximumAge;
 		$this->domain = $domain;
 		$this->path = $path;
@@ -157,7 +157,7 @@ class Cookie {
 			return NULL;
 		}
 
-		$expiresAttribute = 0;
+		$expiresAttribute = NULL;
 		$maxAgeAttribute = NULL;
 		$domainAttribute = NULL;
 		$pathAttribute = NULL;
@@ -175,9 +175,8 @@ class Cookie {
 							$expiresAttribute = new \DateTime($attributeValue);
 						} catch (\Exception $exception) {
 							// as of RFC 6265 Section 5.2.1, a non parsable Expires date should result into
-							// ignoring, but since the Cookie constructor relies on it, we'll
-							// assume a Session cookie with an expiry date of 0.
-							$expiresAttribute = 0;
+							// ignoring.
+							$expiresAttribute = NULL;
 						}
 					break;
 					case 'MAX-AGE':
@@ -253,18 +252,15 @@ class Cookie {
 	}
 
 	/**
-	 * Returns the date and time of the Expires attribute, if any.
+	 * Returns the DateTime representation of the Expires attribute, if any.
 	 *
-	 * Note that this date / time is returned as a unix timestamp, no matter what
-	 * the format was originally set through the constructor of this Cookie.
+	 * The special case "no expiration time" is returned in form of a NULL value.
 	 *
-	 * The special case "no expiration time" is returned in form of a zero value.
-	 *
-	 * @return integer A unix timestamp or 0
+	 * @return \DateTime|NULL
 	 * @api
 	 */
 	public function getExpires() {
-		return $this->expiresTimestamp;
+		return $this->expires;
 	}
 
 	/**
@@ -332,7 +328,7 @@ class Cookie {
 	 * @return void
 	 */
 	public function expire() {
-		$this->expiresTimestamp = 202046400;
+		$this->expires = \DateTime::createFromFormat('U', '202046400');
 		$this->maximumAge = 0;
 	}
 
@@ -343,7 +339,7 @@ class Cookie {
 	 * @return boolean True if this cookie is expired
 	 */
 	public function isExpired() {
-		return ($this->expiresTimestamp !== 0 && $this->expiresTimestamp < time());
+		return ($this->expires !== NULL && $this->expires < new \DateTime());
 	}
 
 	/**
@@ -361,8 +357,9 @@ class Cookie {
 		$cookiePair = sprintf('%s=%s', $this->name, urlencode($value));
 		$attributes = '';
 
-		if ($this->expiresTimestamp !== 0) {
-			$attributes .= '; Expires=' . gmdate('D, d-M-Y H:i:s T', $this->expiresTimestamp);
+		if ($this->expires !== NULL) {
+			// see RFC 6265 Section 4.1, `sane-cookie-date`
+			$attributes .= '; Expires=' . $this->expires->format(\DateTime::RFC1123);
 		}
 
 		if ($this->maximumAge !== NULL && $this->maximumAge > 0) {
