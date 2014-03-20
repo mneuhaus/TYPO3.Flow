@@ -79,7 +79,7 @@ class CurlEngine implements RequestEngineInterface {
 
 		switch ($request->getMethod()) {
 			case 'GET' :
-				if ($request->getContent()) {
+				if ($content) {
 					// workaround because else the request would implicitly fall into POST:
 					curl_setopt($curlHandle, CURLOPT_CUSTOMREQUEST, 'GET');
 					if (!is_resource($content)) {
@@ -98,16 +98,19 @@ class CurlEngine implements RequestEngineInterface {
 				curl_setopt($curlHandle, CURLOPT_PUT, TRUE);
 				if (!is_resource($content) && $content !== '') {
 					$inFileHandler = fopen('php://temp', 'r+');
-					fwrite($inFileHandler, $request->getContent());
+					fwrite($inFileHandler, $content);
 					rewind($inFileHandler);
 					curl_setopt_array($curlHandle, array(
 						CURLOPT_INFILE => $inFileHandler,
-						CURLOPT_INFILESIZE => strlen($request->getContent()),
+						CURLOPT_INFILESIZE => strlen($content),
 					));
 				}
 			break;
 			default:
 				curl_setopt($curlHandle, CURLOPT_CUSTOMREQUEST, $request->getMethod());
+				if (!is_resource($content)) {
+					curl_setopt($curlHandle, CURLOPT_POSTFIELDS, $content);
+				}
 		}
 
 		$preparedHeaders = array();
