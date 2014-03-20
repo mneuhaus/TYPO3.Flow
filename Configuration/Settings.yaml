@@ -140,6 +140,25 @@ TYPO3:
       # The default locale identifier.
       defaultLocale: en
 
+      # Allows dynamic detection of the locale to use for each request.
+      # This can be set to ['Cookie', 'AcceptLanguageHeader'] for example
+      # to use the DetectionStrategies being shipped with Flow.
+      # The here stated DetectionStrategies will be evaluated from left
+      # to right, stopping as soon as a Locale could be determined.
+      detectionChain: FALSE
+
+      # Can contain regular expressions mapped to a locale identifier,
+      # which is evaluated against the current request's host by the
+      # HostDetectionStrategy (see ``detectionChain`` directive above)
+      # an example configuration would be
+      #   '/^de\./': 'de',
+      #   '/^fr\..+\.ch$/': 'fr_CH'
+      hostDetectionPatternMap: []
+
+      # The name of the cookie where to try to find a locale identifier, if configured
+      # as active detection strategy (see ``detectionChain`` directive above).
+      cookieDetectionCookieName: 'locale'
+
       # The fallback rule to use for locale resolution
       fallbackRule:
         # Strictly use the defined order (without implicit locale fallback)

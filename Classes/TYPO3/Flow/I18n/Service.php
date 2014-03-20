@@ -50,6 +50,12 @@ class Service {
 	protected $cache;
 
 	/**
+	 * @Flow\Inject
+	 * @var \TYPO3\Flow\I18n\Detector
+	 */
+	protected $localeDetector;
+
+	/**
 	 * @var \TYPO3\Flow\I18n\Configuration
 	 */
 	protected $configuration;
@@ -83,6 +89,13 @@ class Service {
 		} else {
 			$this->generateAvailableLocalesCollectionByScanningFilesystem();
 			$this->cache->set('availableLocales', $this->localeCollection);
+		}
+
+		if (isset($this->settings['detectionChain']) && is_array($this->settings['detectionChain'])) {
+			$detectedLocale = $this->localeDetector->detectLocaleFromConfiguredStrategies($this->settings['detectionChain']);
+			if ($detectedLocale !== NULL) {
+				$this->configuration->setCurrentLocale($detectedLocale);
+			}
 		}
 	}
 
@@ -277,5 +290,4 @@ class Service {
 			}
 		}
 	}
-
 }
