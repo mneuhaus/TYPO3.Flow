@@ -45,6 +45,12 @@ class Locale {
 	const PATTERN_MATCH_LOCALEIDENTIFIER = '/^(?P<language>[a-zA-Z]{2,3})(?:[-_](?P<script>[a-zA-Z]{4}))?(?:[-_](?P<region>[a-zA-Z]{2}|[0-9]{3})){0,1}(?:[-_](?P<variant>(?:[a-zA-Z0-9]{5,8})|(?:[0-9][a-zA-Z0-9]{3})))?(?:[-_].+)*$/';
 
 	/**
+	 * @Flow\Inject
+	 * @var \TYPO3\Flow\I18n\Cldr\CldrRepository
+	 */
+	protected $cldrRepository;
+
+	/**
 	 * The language identifier - a BCP47, ISO 639-3 or 639-5 code
 	 * Like the standard says, we use "mul" to label multilanguage content
 	 *
@@ -147,6 +153,16 @@ class Locale {
 	 */
 	public function getVariant() {
 		return $this->variant;
+	}
+
+	/**
+	 * Returns a CLDR Model for this locale
+	 *
+	 * @param string $directoryPath Relative path to existing CLDR directory which contains one file per locale (see 'main' directory in CLDR for example)
+	 * @return \TYPO3\Flow\I18n\Cldr\CldrModel A CldrModel instance or NULL on failure
+	 */
+	public function getCldrModel($directoryPath = 'main') {
+		return $this->cldrRepository->getModelForLocale($this, $directoryPath);
 	}
 
 	/**
