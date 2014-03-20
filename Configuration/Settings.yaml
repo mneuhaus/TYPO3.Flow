@@ -201,7 +201,24 @@ TYPO3:
     reflection:
 
       # A list of tags to be ignored during reflection
-      ignoredTags: ['api', 'package', 'subpackage', 'license', 'copyright', 'author', 'const', 'see', 'todo', 'scope', 'fixme', 'test', 'expectedException', 'depends', 'dataProvider', 'group', 'codeCoverageIgnore']
+      ignoredTags:
+        'api': TRUE
+        'author': TRUE
+        'codeCoverageIgnore': TRUE
+        'const': TRUE
+        'copyright': TRUE
+        'dataProvider': TRUE
+        'depends': TRUE
+        'expectedException': TRUE
+        'fixme': TRUE
+        'group': TRUE
+        'license': TRUE
+        'package': TRUE
+        'scope': TRUE
+        'see': TRUE
+        'subpackage': TRUE
+        'test': TRUE
+        'todo': TRUE
 
       # If enabled, the Reflection Service notes all incorrect or inconsistent usage
       # of @param annotations in the default log.

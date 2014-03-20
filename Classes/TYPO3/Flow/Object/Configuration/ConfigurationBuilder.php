@@ -410,7 +410,8 @@ class ConfigurationBuilder {
 					throw new \TYPO3\Flow\Object\Exception($exceptionMessage, 1328109641);
 				}
 				if (!array_key_exists($propertyName, $properties)) {
-					$objectName = trim(implode('', $this->reflectionService->getPropertyTagValues($className, $propertyName, 'var')), ' \\');
+					$varTagValues = $this->reflectionService->getPropertyTagValues($className, $propertyName, 'var');
+					$objectName = strtok(trim(current($varTagValues), " \n\t\\"), " \n\t");
 					$properties[$propertyName] =  new ConfigurationProperty($propertyName, $objectName, ConfigurationProperty::PROPERTY_TYPES_OBJECT);
 				}
 			}
