@@ -58,6 +58,18 @@ class Post {
 	protected $related;
 
 	/**
+	 * @var \Doctrine\Common\Collections\Collection<\TYPO3\Flow\Tests\Functional\Persistence\Fixtures\Category>
+	 * @ORM\ManyToMany(inversedBy="posts")
+	 */
+	protected $categories;
+
+	/**
+	 */
+	public function __construct() {
+		$this->categories = new \Doctrine\Common\Collections\ArrayCollection();
+	}
+
+	/**
 	 * @return string
 	 * @ORM\PrePersist
 	 */
@@ -100,6 +112,13 @@ class Post {
 	 */
 	public function getComment() {
 		return $this->comment;
+	}
+
+	/**
+	 * @param Category $category
+	 */
+	public function addCategory(Category $category) {
+		$this->categories->add($category);
 	}
 
 }

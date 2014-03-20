@@ -549,21 +549,28 @@ class Query implements \TYPO3\Flow\Persistence\QueryInterface {
 	 */
 	protected function getPropertyNameWithAlias($propertyPath) {
 		$aliases = $this->queryBuilder->getRootAliases();
-		$previousJoinAlias = $aliases[0];
+		$joinString = $aliases[0];
 		if (strpos($propertyPath, '.') === FALSE) {
-			return $previousJoinAlias . '.' . $propertyPath;
+			return $joinString . '.' . $propertyPath;
 		}
 
 		$propertyPathParts = explode('.', $propertyPath);
 		$conditionPartsCount = count($propertyPathParts);
+		$joinAlias = '';
 		for ($i = 0; $i < $conditionPartsCount - 1; $i++) {
-			$joinAlias = $propertyPathParts[$i] . $this->joinAliasCounter++;
-			$this->queryBuilder->leftJoin($previousJoinAlias . '.' . $propertyPathParts[$i], $joinAlias);
-			$this->joins[$joinAlias] = $previousJoinAlias . '.' . $propertyPathParts[$i];
-			$previousJoinAlias = $joinAlias;
+			$joinAlias .= ($joinAlias ? '_' : $aliases[0]) . $propertyPathParts[$i] . 'join';
+			if (isset($this->joins[$joinAlias])) {
+				continue;
+			}
+			$joinString .= '.' . $propertyPathParts[$i];
+			$this->queryBuilder->leftJoin($joinString, $joinAlias);
+			$this->joins[$joinAlias] = $joinString;
 		}
-
-		return $previousJoinAlias . '.' . $propertyPathParts[$i];
+		if ($i > 0) {
+			return $joinAlias . '.' . $propertyPathParts[$i];
+		} else {
+			return $joinString . '.' . $propertyPathParts[$i];
+		}
 	}
 
 	/**
