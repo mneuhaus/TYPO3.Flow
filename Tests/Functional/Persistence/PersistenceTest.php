@@ -11,6 +11,7 @@ namespace TYPO3\Flow\Tests\Functional\Persistence;
  * The TYPO3 project - inspiring people to share!                         *
  *                                                                        */
 
+use TYPO3\Flow\Tests\Functional\Persistence\Fixtures\AnnotatedIdentitiesEntity;
 use TYPO3\Flow\Tests\Functional\Persistence\Fixtures\TestEntity;
 use TYPO3\Flow\Tests\Functional\Persistence\Fixtures\TestEntityRepository;
 use TYPO3\Flow\Tests\Functional\Persistence\Fixtures\TestValueObject;
@@ -122,6 +123,19 @@ class PersistenceTest extends \TYPO3\Flow\Tests\FunctionalTestCase {
 		$clonedEntity = clone $testEntity;
 		$secondIdentifier = $this->persistenceManager->getIdentifierByObject($clonedEntity);
 		$this->assertNotEquals($firstIdentifier, $secondIdentifier);
+	}
+
+	/**
+	 * @test
+	 */
+	public function getIdentifierByObjectReturnsCorrectIdentifierForEntitiesWithAnnotatedIdentity() {
+		$testEntity = new AnnotatedIdentitiesEntity();
+		$testEntity->setAuthor('Mihály Csíkszentmihályi');
+		$testEntity->setTitle('Flow');
+		$identifier = $this->persistenceManager->getIdentifierByObject($testEntity);
+		$this->assertInternalType('array', $identifier);
+		$this->assertArrayHasKey('author', $identifier);
+		$this->assertArrayHasKey('title', $identifier);
 	}
 
 	/**
