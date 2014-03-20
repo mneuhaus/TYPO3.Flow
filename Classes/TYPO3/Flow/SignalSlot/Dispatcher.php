@@ -47,6 +47,22 @@ class Dispatcher {
 	}
 
 	/**
+	 * @param Core\Bootstrap $bootstrap The current bootstrap
+	 * @return void
+	 */
+	public function __construct(\TYPO3\Flow\Core\Bootstrap $bootstrap) {
+		$tempPath = FLOW_PATH_DATA . 'Temporary/' . str_replace('/', '/SubContext', (string)$bootstrap->getContext()) . '/';
+		if (file_exists($tempPath . '/SignalSlots.php')) {
+			$classSlots = include($tempPath . '/SignalSlots.php');
+			foreach ($classSlots as $className => $slots) {
+				foreach ($slots as $slot) {
+					$this->connect($slot['signalClassName'], $slot['signalName'], $slot['slotClassName'], $slot['slotName'], $slot['passSignalInformation']);
+				}
+			}
+		}
+	}
+
+	/**
 	 * Connects a signal with a slot.
 	 * One slot can be connected with multiple signals by calling this method multiple times.
 	 *

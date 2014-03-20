@@ -117,3 +117,8 @@ Flow_Session_MetaData:
   backend: TYPO3\Flow\Cache\Backend\FileBackend
 Flow_Session_Storage:
   backend: TYPO3\Flow\Cache\Backend\FileBackend
+
+##
+# Cache for slots wired through annotation
+#
+Flow_SignalSlot_Annotations: []

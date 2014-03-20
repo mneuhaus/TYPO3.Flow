@@ -109,7 +109,7 @@ class Scripts {
 	 * @return void
 	 */
 	static public function initializeSignalSlot(Bootstrap $bootstrap) {
-		$bootstrap->setEarlyInstance('TYPO3\Flow\SignalSlot\Dispatcher', new \TYPO3\Flow\SignalSlot\Dispatcher());
+		$bootstrap->setEarlyInstance('TYPO3\Flow\SignalSlot\Dispatcher', new \TYPO3\Flow\SignalSlot\Dispatcher($bootstrap));
 	}
 
 	/**
