@@ -222,11 +222,11 @@ class Session implements SessionInterface {
 	 */
 	public function injectSettings(array $settings) {
 		$this->sessionCookieName = $settings['session']['name'];
-		$this->sessionCookieLifetime =  (integer)$settings['session']['cookie']['lifetime'];
-		$this->sessionCookieDomain =  $settings['session']['cookie']['domain'];
-		$this->sessionCookiePath =  $settings['session']['cookie']['path'];
-		$this->sessionCookieSecure =  (boolean)$settings['session']['cookie']['secure'];
-		$this->sessionCookieHttpOnly =  (boolean)$settings['session']['cookie']['httponly'];
+		$this->sessionCookieLifetime = (integer)$settings['session']['cookie']['lifetime'];
+		$this->sessionCookieDomain = $settings['session']['cookie']['domain'];
+		$this->sessionCookiePath = $settings['session']['cookie']['path'];
+		$this->sessionCookieSecure = (boolean)$settings['session']['cookie']['secure'];
+		$this->sessionCookieHttpOnly = (boolean)$settings['session']['cookie']['httponly'];
 		$this->garbageCollectionProbability = $settings['session']['garbageCollection']['probability'];
 		$this->garbageCollectionMaximumPerRun = $settings['session']['garbageCollection']['maximumPerRun'];
 		$this->inactivityTimeout = (integer)$settings['session']['inactivityTimeout'];
@@ -606,7 +606,7 @@ class Session implements SessionInterface {
 					$this->systemLogger->log('SESSION INFO INVALID: ' . $sessionIdentifier, LOG_WARNING, $sessionInfo);
 				} else {
 					$this->storageCache->flushByTag($sessionInfo['storageIdentifier']);
-					$sessionRemovalCount ++;
+					$sessionRemovalCount++;
 				}
 				$this->metaDataCache->remove($sessionIdentifier);
 			}
@@ -707,7 +707,7 @@ class Session implements SessionInterface {
 	 * Note that if a session is started after tokens have been authenticated, the
 	 * session will NOT be tagged with authenticated accounts.
 	 *
-	 * @param array<\TYPO3\Flow\Security\Authentication\TokenInterface>
+	 * @param array <\TYPO3\Flow\Security\Authentication\TokenInterface>
 	 * @return void
 	 */
 	protected function storeAuthenticatedAccountsInfo(array $tokens) {
@@ -742,7 +742,7 @@ class Session implements SessionInterface {
 			'tags' => $this->tags
 		);
 
-		$tagsForCacheEntry = array_map(function($tag) {
+		$tagsForCacheEntry = array_map(function ($tag) {
 			return Session::TAG_PREFIX . $tag;
 		}, $this->tags);
 		$tagsForCacheEntry[] = $this->sessionIdentifier;
