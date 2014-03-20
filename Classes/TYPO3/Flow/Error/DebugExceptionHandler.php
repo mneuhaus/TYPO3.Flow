@@ -35,7 +35,7 @@ class DebugExceptionHandler extends AbstractExceptionHandler {
 			$statusCode = $exception->getStatusCode();
 		}
 		$statusMessage = Response::getStatusMessageByCode($statusCode);
-		if (!headers_sent()) {
+		if (extension_loaded('appserver') || !headers_sent()) {
 			header(sprintf('HTTP/1.1 %s %s', $statusCode, $statusMessage));
 		}
 

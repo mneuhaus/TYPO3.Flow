@@ -73,8 +73,8 @@ abstract class AbstractExceptionHandler implements ExceptionHandlerInterface {
 			$this->systemLogger->logException($exception);
 		}
 
-		switch (PHP_SAPI) {
-			case 'cli' :
+		switch (FLOW_SAPITYPE) {
+			case 'CLI' :
 				$this->echoExceptionCli($exception);
 				break;
 			default :

@@ -43,7 +43,7 @@ class SlaveRequestHandler implements \TYPO3\Flow\Core\RequestHandlerInterface {
 	 * @return boolean If the request is a CLI request, TRUE otherwise FALSE
 	 */
 	public function canHandleRequest() {
-		return (PHP_SAPI === 'cli' && isset($_SERVER['argv'][1]) && $_SERVER['argv'][1] === '--start-slave');
+		return (FLOW_SAPITYPE === 'CLI' && isset($_SERVER['argv'][1]) && $_SERVER['argv'][1] === '--start-slave');
 	}
 
 	/**
