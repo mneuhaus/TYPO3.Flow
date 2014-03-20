@@ -69,6 +69,7 @@ class FileBackend extends SimpleFileBackend implements PhpCapableBackendInterfac
 			if ($directoryIterator->isDot()) {
 				continue;
 			}
+
 			if ($cacheEntryFileExtensionLength > 0) {
 				$entryIdentifier = substr($directoryIterator->getFilename(), 0, -$cacheEntryFileExtensionLength);
 			} else {
@@ -256,7 +257,7 @@ class FileBackend extends SimpleFileBackend implements PhpCapableBackendInterfac
 		$now = $_SERVER['REQUEST_TIME'];
 		$cacheEntryFileExtensionLength = strlen($this->cacheEntryFileExtension);
 		for ($directoryIterator = new \DirectoryIterator($this->cacheDirectory); $directoryIterator->valid(); $directoryIterator->next()) {
-			if ($directoryIterator->isDot()) {
+			if (strpos($directoryIterator->getBasename(), '.') === 0) {
 				continue;
 			}
 
@@ -343,7 +344,7 @@ class FileBackend extends SimpleFileBackend implements PhpCapableBackendInterfac
 		}
 
 		for ($directoryIterator = new \DirectoryIterator($this->cacheDirectory); $directoryIterator->valid(); $directoryIterator->next()) {
-			if ($directoryIterator->isDot()) {
+			if (strpos($directoryIterator->getBasename(), '.') === 0) {
 				continue;
 			}
 
