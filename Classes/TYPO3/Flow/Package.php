@@ -84,5 +84,6 @@ you are still free to call PersistenceManager->persistAll() manually.';
 			$configurationManager->registerConfigurationType('Views', Configuration\ConfigurationManager::CONFIGURATION_PROCESSING_TYPE_APPEND);
 		});
 		$dispatcher->connect('TYPO3\Flow\Command\CacheCommandController', 'warmupCaches', 'TYPO3\Flow\Configuration\ConfigurationManager', 'warmup');
+		$dispatcher->connect('TYPO3\Flow\Persistence\Doctrine\Service', 'migrationTableWasCreated', 'TYPO3\Flow\Security\Policy\PolicyService', 'reset');
 	}
 }
