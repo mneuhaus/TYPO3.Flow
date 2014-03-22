@@ -27,13 +27,14 @@ class XliffModelTest extends \TYPO3\Flow\Tests\UnitTestCase {
 	 */
 	public function setUp() {
 		$mockFilename = 'foo';
-		$mockParsedData = require(__DIR__ . '/../Fixtures/MockParsedXliffData.php');
 
 		$this->mockCache = $this->getMock('TYPO3\Flow\Cache\Frontend\VariableFrontend', array(), array(), '', FALSE);
 		$this->mockCache->expects($this->any())->method('has')->with(md5($mockFilename))->will($this->returnValue(FALSE));
 
+		$parser = new \TYPO3\Flow\I18n\Xliff\XliffParser();
+		$parsedData = $parser->getParsedData(__DIR__ . '/../Fixtures/MockXliffData.xlf');
 		$this->mockXliffParser = $this->getMock('TYPO3\Flow\I18n\Xliff\XliffParser');
-		$this->mockXliffParser->expects($this->any())->method('getParsedData')->with($mockFilename)->will($this->returnValue($mockParsedData));
+		$this->mockXliffParser->expects($this->any())->method('getParsedData')->with($mockFilename)->will($this->returnValue($parsedData));
 
 		$this->model = new \TYPO3\Flow\I18n\Xliff\XliffModel($mockFilename, new \TYPO3\Flow\I18n\Locale('de'));
 		$this->model->injectCache($this->mockCache);
@@ -62,6 +63,15 @@ class XliffModelTest extends \TYPO3\Flow\Tests\UnitTestCase {
 	/**
 	 * @test
 	 */
+	public function targetIsReturnedCorrectlyWhenSourceAndFileIsProvided() {
+		$this->assertEquals('Übersetzte Zeichenkette', $this->model->getTargetBySource('Source string', 0, 'foo.po'));
+		$this->assertFalse($this->model->getTargetBySource('Source string', 0, 'incorrect-file.po'));
+		$this->assertFalse($this->model->getTargetBySource('Source string', 0, 'more'));
+	}
+
+	/**
+	 * @test
+	 */
 	public function targetIsReturnedCorrectlyWhenIdProvided() {
 		$result = $this->model->getTargetByTransUnitId('key1');
 		$this->assertEquals('Übersetzte Zeichenkette', $result);
@@ -71,6 +81,15 @@ class XliffModelTest extends \TYPO3\Flow\Tests\UnitTestCase {
 
 		$result = $this->model->getTargetByTransUnitId('not.existing');
 		$this->assertFalse($result);
+	}
+
+	/**
+	 * @test
+	 */
+	public function targetIsReturnedCorrectlyWhenIdAndFileIsProvided() {
+		$this->assertEquals('Übersetzte Zeichenkette', $this->model->getTargetByTransUnitId('key1', 0, 'foo.po'));
+		$this->assertFalse($this->model->getTargetBySource('key1', 0, 'incorrect-file.po'));
+		$this->assertFalse($this->model->getTargetBySource('key1', 0, 'more'));
 	}
 
 	/**
@@ -91,7 +110,7 @@ class XliffModelTest extends \TYPO3\Flow\Tests\UnitTestCase {
 	 */
 	public function getTargetBySourceLogsSilentlyIfNoTransUnitsArePresent() {
 		$this->mockXliffParser = $this->getMock('TYPO3\Flow\I18n\Xliff\XliffParser');
-		$this->mockXliffParser->expects($this->once())->method('getParsedData')->will($this->returnValue(array()));
+		$this->mockXliffParser->expects($this->once())->method('getParsedData')->will($this->returnValue(array('files' => array('some.name' => array('fooData')))));
 
 		$mockSystemLogger = $this->getMock('TYPO3\Flow\Log\SystemLoggerInterface', array(), array(), '', FALSE);
 		$mockSystemLogger->expects($this->once())->method('log')->with($this->stringStartsWith('No trans-unit elements were found'), LOG_WARNING);

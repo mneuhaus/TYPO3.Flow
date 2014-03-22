@@ -45,7 +45,11 @@ class TranslatorTest extends \TYPO3\Flow\Tests\UnitTestCase {
 	 */
 	public function translatingIsDoneCorrectly() {
 		$mockTranslationProvider = $this->getMock('TYPO3\Flow\I18n\TranslationProvider\XliffTranslationProvider');
-		$mockTranslationProvider->expects($this->once())->method('getTranslationByOriginalLabel')->with('Untranslated label', $this->defaultLocale, \TYPO3\Flow\I18n\Cldr\Reader\PluralsReader::RULE_ONE, 'source', 'packageKey')->will($this->returnValue('Translated label'));
+		$mockTranslationProvider
+			->expects($this->once())
+			->method('getTranslationByOriginalLabel')
+			->with('Untranslated label', $this->defaultLocale, \TYPO3\Flow\I18n\Cldr\Reader\PluralsReader::RULE_ONE, 'source', 'packageKey', 'division')
+			->will($this->returnValue('Translated label'));
 
 		$mockFormatResolver = $this->getMock('TYPO3\Flow\I18n\FormatResolver');
 		$mockFormatResolver->expects($this->once())->method('resolvePlaceholders')->with('Translated label', array('value1', 'value2'), $this->defaultLocale)->will($this->returnValue('Formatted and translated label'));
@@ -57,7 +61,7 @@ class TranslatorTest extends \TYPO3\Flow\Tests\UnitTestCase {
 		$this->translator->injectTranslationProvider($mockTranslationProvider);
 		$this->translator->injectFormatResolver($mockFormatResolver);
 
-			$result = $this->translator->translateByOriginalLabel('Untranslated label', array('value1', 'value2'), 1, NULL, 'source', 'packageKey');
+		$result = $this->translator->translateByOriginalLabel('Untranslated label', array('value1', 'value2'), 1, NULL, 'source', 'packageKey', 'division');
 		$this->assertEquals('Formatted and translated label', $result);
 	}
 

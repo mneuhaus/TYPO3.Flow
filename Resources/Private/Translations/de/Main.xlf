@@ -1,36 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 http://docs.oasis-open.org/xliff/v1.2/os/xliff-core-1.2-strict.xsd">
 	<file original="" product-name="TYPO3.Flow" source-language="en" target-language="de" datatype="plaintext">
 		<body>
-			<trans-unit id="authentication.required" xml:space="preserve">
+			<trans-unit id="authentication.required">
 				<source>Authentication required</source>
 				<target>Authentifizierung erforderlich</target>
 			</trans-unit>
-			<trans-unit id="authentication.username" xml:space="preserve">
+			<trans-unit id="authentication.username">
 				<source>Username</source>
 				<target>Benutzername</target>
 			</trans-unit>
-			<trans-unit id="authentication.password" xml:space="preserve">
+			<trans-unit id="authentication.password">
 				<source>Password</source>
 				<target>Kennwort</target>
 			</trans-unit>
-			<trans-unit id="authentication.new-password" xml:space="preserve">
+			<trans-unit id="authentication.new-password">
 				<source>New password</source>
 				<target>Neues Kennwort</target>
 			</trans-unit>
-			<trans-unit id="authentication.login" xml:space="preserve">
+			<trans-unit id="authentication.login">
 				<source>Login</source>
 				<target>Anmelden</target>
 			</trans-unit>
-			<trans-unit id="authentication.logout" xml:space="preserve">
+			<trans-unit id="authentication.logout">
 				<source>Logout</source>
 				<target>Abmelden</target>
 			</trans-unit>
-			<trans-unit id="update" xml:space="preserve">
+			<trans-unit id="update">
 				<source>Update</source>
 				<target>Aktualisieren</target>
 			</trans-unit>
-			<trans-unit id="submit" xml:space="preserve">
+			<trans-unit id="submit">
 				<source>Submit</source>
 				<target>Absenden</target>
 			</trans-unit>
