@@ -225,6 +225,7 @@ class JsonView extends \TYPO3\Flow\Mvc\View\AbstractView {
 	 * @return array The transformed value
 	 */
 	protected function transformValue($value, array $configuration) {
+
 		if (is_array($value) || $value instanceof \ArrayAccess) {
 			$array = array();
 			foreach ($value as $key => $element) {
@@ -241,6 +242,8 @@ class JsonView extends \TYPO3\Flow\Mvc\View\AbstractView {
 				}
 			}
 			return $array;
+		} elseif (is_object($value) && $value instanceof \JsonSerializable){
+			return $this->transformValue($value->jsonSerialize(), $configuration);
 		} elseif (is_object($value)) {
 			return $this->transformObject($value, $configuration);
 		} else {
