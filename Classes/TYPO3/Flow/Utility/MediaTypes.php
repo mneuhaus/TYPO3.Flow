@@ -1796,16 +1796,29 @@ class MediaTypes {
 	 * Returns a Media Type based on the filename extension
 	 *
 	 * @param  string $filename Filename to determine the media type for, for example "index.html"
+	 * @param  string $defaultMediaType The default media type if the given filename is unknown
 	 * @return string The IANA Internet Media Type
 	 * @api
 	 */
-	static public function getMediaTypeFromFilename($filename) {
+	static public function getMediaTypeFromFilename($filename, $defaultMediaType = 'application/octet-stream') {
 		$pathinfo = pathinfo(strtolower($filename));
 		if (!isset($pathinfo['extension'])) {
-			return 'application/octet-stream';
+			return $defaultMediaType;
 		} else {
 			return isset(self::$extensionToMediaType[$pathinfo['extension']]) ? self::$extensionToMediaType[$pathinfo['extension']] : 'application/octet-stream';
 		}
+	}
+
+	/**
+	 * Returns a Media Type based on the filename extension
+	 *
+	 * @param  string $requestUri The request URI to determine the media type for, for example "/path/index.html"
+	 * @param  string $defaultMediaType The default media type if the given filename is unknown
+	 * @return string The IANA Internet Media Type
+	 * @api
+	 */
+	static public function getMeditTypeFromRequestUri($requestUri, $defaultMediaType = 'text/html') {
+		return self::getMediaTypeFromFilename($requestUri, $defaultMediaType);
 	}
 
 	/**
