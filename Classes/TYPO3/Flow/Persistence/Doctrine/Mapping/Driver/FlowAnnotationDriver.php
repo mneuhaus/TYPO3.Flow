@@ -603,6 +603,9 @@ class FlowAnnotationDriver implements \Doctrine\Common\Persistence\Mapping\Drive
 						case 'DateTime':
 							$mapping['type'] = 'datetime';
 							break;
+						case 'DateInterval':
+							$mapping['type'] = 'time';
+							break;
 						case 'string':
 						case 'integer':
 						case 'boolean':
@@ -611,16 +614,10 @@ class FlowAnnotationDriver implements \Doctrine\Common\Persistence\Mapping\Drive
 							$mapping['type'] = $propertyMetaData['type'];
 							break;
 						default:
-							if (strpos($propertyMetaData['type'], '\\') !== FALSE) {
-								if ($this->reflectionService->isClassAnnotatedWith($propertyMetaData['type'], 'TYPO3\Flow\Annotations\ValueObject')) {
-									$mapping['type'] = 'object';
-								} elseif (class_exists($propertyMetaData['type'])) {
-
-									throw \Doctrine\ORM\Mapping\MappingException::missingRequiredOption($property->getName(), 'OneToOne', sprintf('The property "%s" in class "%s" has a non standard data type and doesn\'t define the type of the relation. You have to use one of these annotations: @OneToOne, @OneToMany, @ManyToOne, @ManyToMany', $property->getName(), $className));
-								}
-							} else {
-								throw \Doctrine\ORM\Mapping\MappingException::propertyTypeIsRequired($className, $property->getName());
+							if (strpos($propertyMetaData['type'], '\\') !== FALSE && ($this->reflectionService->isClassImplementationOf($propertyMetaData['type'],'\Serializable') || $this->reflectionService->isClassAnnotatedWith($propertyMetaData['type'], 'TYPO3\Flow\Annotations\ValueObject'))) {
+								$mapping['type'] = 'object';
 							}
+							break;
 					}
 
 				}
