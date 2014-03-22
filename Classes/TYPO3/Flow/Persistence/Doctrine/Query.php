@@ -424,11 +424,15 @@ class Query implements \TYPO3\Flow\Persistence\QueryInterface {
 	 * @param boolean $caseSensitive Whether the matching should be done case-sensitive
 	 * @return object
 	 * @throws \TYPO3\Flow\Persistence\Exception\InvalidQueryException if used on a non-string property
-	 * @todo implement case-sensitivity switch
 	 * @api
 	 */
 	public function like($propertyName, $operand, $caseSensitive = TRUE) {
-		return $this->queryBuilder->expr()->like($this->getPropertyNameWithAlias($propertyName), $this->getParamNeedle($operand));
+		$aliasedPropertyName = $this->getPropertyNameWithAlias($propertyName);
+		if ($caseSensitive === TRUE) {
+			return $this->queryBuilder->expr()->like($aliasedPropertyName, $this->getParamNeedle($operand));
+		}
+
+		return $this->queryBuilder->expr()->like($this->queryBuilder->expr()->lower($aliasedPropertyName), $this->getParamNeedle(strtolower($operand)));
 	}
 
 	/**
