@@ -211,7 +211,7 @@ class JsonView extends \TYPO3\Flow\Mvc\View\AbstractView {
 			foreach ($this->variablesToRender as $variableName) {
 				$valueToRender[$variableName] = isset($this->variables[$variableName]) ? $this->variables[$variableName] : NULL;
 			}
-			$configuration = $this->configuration;
+			$configuration = array('_descendAll' => $this->configuration);
 		}
 		return $this->transformValue($valueToRender, $configuration);
 	}
@@ -228,16 +228,23 @@ class JsonView extends \TYPO3\Flow\Mvc\View\AbstractView {
 		if (is_array($value) || $value instanceof \ArrayAccess) {
 			$array = array();
 			foreach ($value as $key => $element) {
-				if (isset($configuration['_descendAll']) && is_array($configuration['_descendAll'])) {
+				if (isset($configuration['_only']) && is_array($configuration['_only']) && !in_array($key, $configuration['_only'])) {
+					continue;
+				}
+				if (isset($configuration['_exclude']) && is_array($configuration['_exclude']) && in_array($key, $configuration['_exclude'])) {
+					continue;
+				}
+				if (isset($configuration['_descendLevels']) && $configuration['_descendLevels'] > 0) {
+					$configuration['_descendLevels']--;
+					$array[$key] = $this->transformValue($element, $configuration);
+				} elseif (isset($configuration['_descendAll']) && is_array($configuration['_descendAll'])) {
 					$array[$key] = $this->transformValue($element, $configuration['_descendAll']);
 				} else {
-					if (isset($configuration['_only']) && is_array($configuration['_only']) && !in_array($key, $configuration['_only'])) {
-						continue;
+					if (!is_array($element) && !is_object($element)) {
+						$array[$key] = $element;
+					} elseif (isset($configuration['_descend'][$key])) {
+						$array[$key] = $this->transformValue($element, $configuration['_descend'][$key]);
 					}
-					if (isset($configuration['_exclude']) && is_array($configuration['_exclude']) && in_array($key, $configuration['_exclude'])) {
-						continue;
-					}
-					$array[$key] = $this->transformValue($element, isset($configuration[$key]) ? $configuration[$key] : array());
 				}
 			}
 			return $array;
@@ -272,11 +279,17 @@ class JsonView extends \TYPO3\Flow\Mvc\View\AbstractView {
 				}
 
 				$propertyValue = \TYPO3\Flow\Reflection\ObjectAccess::getProperty($object, $propertyName);
-
-				if (!is_array($propertyValue) && !is_object($propertyValue)) {
-					$propertiesToRender[$propertyName] = $propertyValue;
-				} elseif (isset($configuration['_descend']) && array_key_exists($propertyName, $configuration['_descend'])) {
-					$propertiesToRender[$propertyName] = $this->transformValue($propertyValue, $configuration['_descend'][$propertyName]);
+				if (isset($configuration['_descendLevels']) && $configuration['_descendLevels'] > 0) {
+					$configuration['_descendLevels']--;
+					$propertiesToRender[$propertyName] = $this->transformValue($propertyValue, $configuration);
+				} elseif (isset($configuration['_descendAll']) && is_array($configuration['_descendAll'])) {
+					$propertiesToRender[$propertyName] = $this->transformValue($propertyValue, $configuration['_descendAll']);
+				} else {
+					if (!is_array($propertyValue) && !is_object($propertyValue)) {
+						$propertiesToRender[$propertyName] = $propertyValue;
+					} elseif (isset($configuration['_descend'][$propertyName])) {
+						$propertiesToRender[$propertyName] = $this->transformValue($propertyValue, $configuration['_descend'][$propertyName]);
+					}
 				}
 			}
 			if (isset($configuration['_exposeObjectIdentifier']) && $configuration['_exposeObjectIdentifier'] === TRUE) {
