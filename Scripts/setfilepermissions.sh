@@ -66,14 +66,12 @@ if [ "$?" -eq "0" ]; then echo "Done."; exit 0; fi
 echo
 echo "Note: Access Control Lists seem not to be supported by your system."
 echo
-echo "Setting file permissions per file, this might take a while ..."
+echo "Setting file permissions, this might take a while ..."
 
 sudo chown -R $COMMANDLINE_USER:$WEBSERVER_GROUP .
-find . -type d -exec sudo chmod 2770 {} \;
-find . -type f \! \( -name commit-msg -or -name '*.sh' \) -exec sudo chmod 660 {} \;
+sudo chmod -R ug+rwX,o-rwXx .
 
-sudo chmod 770 flow
-sudo chmod 700 $0
+find . -type f -name '*.sh' -or -name flow -exec sudo chmod ug+x {} \;
 
 sudo chown -R $WEBSERVER_USER:$WEBSERVER_GROUP Web/_Resources
 sudo chmod 770 Web/_Resources
