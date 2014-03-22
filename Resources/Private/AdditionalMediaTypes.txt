@@ -1,0 +1,32 @@
+﻿# This file maps Internet media types to unique file extension(s).
+# It extends the mime type map created for http with some additional
+# media types that we want to be able to recognize.
+#
+# Be sure to run TYPO3.Flow/Scripts/updatemediatypes.php after updating this file.
+#
+# MIME type (lowercased)                        Extensions
+# ============================================  ==========
+# To learn about the php MediaType,
+# see: http://cweiske.de/tagebuch/php-mimetype.htm
+application/x-php                               php
+#
+# These are commented out until someone says they need them
+#application/x-php                               php3 php4 php5 phps phtml inc
+# These are also possible but not as common
+#application/x-php                               phpt php.tmpl
+#
+application/x-less-css                          less
+application/x-sass-css                          sass scss
+application/x-coffeescript                      coffee
+application/x-typoscript                        ts2 ts
+application/x-yaml                              yaml yml
+text/x-rst                                      rest rst
+text/x-markdown                                 md
+application/x-actionscript                      as
+application/x-python                            py
+application/x-ruby                              rb
+#
+# These are also possible
+#application/x-typoscript                        txtt
+#application/x-python                            pyw pyc pyo pyd
+#application/x-ruby                              rbw
