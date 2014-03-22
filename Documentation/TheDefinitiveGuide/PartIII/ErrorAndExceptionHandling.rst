@@ -133,6 +133,8 @@ An example configuration could look like in the following Settings.yaml excerpt:
 	              templatePathAndFilename: 'resource://TYPO3.Flow/Private/Templates/Error/Default.html'
 	              variables:
 	                errorDescription: 'Sorry, the page you requested was not found.'
+	              objectVariables:
+                    'user': 'TYPO3\Flow\Security\Context.party'
 
 	          databaseConnectionExceptions:
 	            matchingExceptionClassNames: ['TYPO3\Flow\Persistence\Doctrine\DatabaseConnectionException']
@@ -169,7 +171,14 @@ key names, their actual naming has no further impressions.
 		the format to use, for example ``html`` or ``json``, if appropriate
 
 	``variables``
-		an array of additional, arbitrary variables which can be accessed in the template
+		an array of additional, arbitrary variables with primitive values which can be accessed in the template. The
+		above example ``errorDescription: 'Sorry, the database connection couldn''t be established.'`` will, for example,
+		assign a template variable ``errorDescription`` with the given string value.
+
+	``objectVariables``
+		an array where each item resolves to an object and a getter property path. The above example
+		``'user': 'TYPO3\Flow\Security\Context.party'`` will, for example, assign a template variable ``user``,
+		pointing to the return value of ``TYPO3\Flow\Security\Context``'s ``getParty()`` method.
 
 The following variables will be assigned to the template an can be used there:
 

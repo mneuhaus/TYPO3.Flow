@@ -18,7 +18,16 @@ properties:
             'matchingStatusCodes':
               type: array
               items: { type: integer }
-            'options': { type: dictionary }
+            'options':
+              type: dictionary
+              additionalProperties: FALSE
+              properties:
+                'templatePathAndFilename': { type: string, required: TRUE, format: uri }
+                'layoutRootPath': { type: string, format: uri }
+                'partialRootPath': { type: string, format: uri }
+                'format': { type: string }
+                'variables': { type: dictionary }
+                'objectVariables': { type: dictionary }
             'matchingExceptionClassNames':
               type: array
               items: { type: string, required: TRUE, format: class-name }
