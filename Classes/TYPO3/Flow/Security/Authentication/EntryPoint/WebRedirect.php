@@ -77,4 +77,17 @@ class WebRedirect extends AbstractEntryPoint {
 		return $routeValue;
 	}
 
+	/**
+	 * The WebRedirect entry point handles everything but AJAX requests
+	 *
+	 * @param \TYPO3\Flow\Http\Request $request
+	 * @return boolean FALSE if the request is an AJAX request, TRUE otherwise
+	 */
+	public function canHandleRequest(\TYPO3\Flow\Http\Request $request) {
+		if ($request->hasHeader('X-Requested-With') && $request->getHeader('X-Requested-With') === 'XMLHttpRequest') {
+			return FALSE;
+		}
+		return TRUE;
+	}
+
 }

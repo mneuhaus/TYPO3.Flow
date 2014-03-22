@@ -35,6 +35,14 @@ interface EntryPointInterface {
 	public function getOptions();
 
 	/**
+	 * Check if the entry point can handle the current request
+	 *
+	 * @param \TYPO3\Flow\Http\Request $request The current request
+	 * @return boolean TRUE if the request can be handled by this entry point, FALSE otherwise
+	 */
+	public function canHandleRequest(Request $request);
+
+	/**
 	 * Starts the authentication. (e.g. redirect to login page or send 401 HTTP header)
 	 *
 	 * @param \TYPO3\Flow\Http\Request $request The current request

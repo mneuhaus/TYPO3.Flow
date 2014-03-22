@@ -92,4 +92,18 @@ class WebRedirectTest extends \TYPO3\Flow\Tests\UnitTestCase {
 		$this->assertEquals('303', substr($response->getStatus(), 0, 3));
 		$this->assertEquals('http://resolved/redirect/uri', $response->getHeader('Location'));
 	}
+
+	/**
+	 * @test
+	 */
+	public function canHandleRequestReturnsFalseForAjaxRequests() {
+		$request = Request::create(new Uri('http://robertlemke.com/service/ajax'));
+		$request->setHeader('X-Requested-With', 'XMLHttpRequest');
+
+		$entryPoint = new WebRedirect();
+		$entryPoint->setOptions(array('uri' => 'some/page'));
+
+		$this->assertFalse($entryPoint->canHandleRequest($request));
+	}
+
 }
