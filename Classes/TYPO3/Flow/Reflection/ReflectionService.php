@@ -318,7 +318,9 @@ class ReflectionService {
 	protected function initialize() {
 		$this->context = $this->environment->getContext();
 
-		if ($this->context->isProduction() && $this->reflectionDataRuntimeCache->getBackend()->isFrozen()) {
+		if ($this->context->isProduction() &&
+			$this->reflectionDataRuntimeCache->has('__classNames') &&
+			$this->reflectionDataRuntimeCache->has('__annotatedClasses')) {
 			$this->classReflectionData = $this->reflectionDataRuntimeCache->get('__classNames');
 			$this->annotatedClasses = $this->reflectionDataRuntimeCache->get('__annotatedClasses');
 			$this->loadFromClassSchemaRuntimeCache = TRUE;
@@ -2009,8 +2011,12 @@ class ReflectionService {
 			$this->reflectionDataRuntimeCache->set('__classNames', $classNames);
 			$this->reflectionDataRuntimeCache->set('__annotatedClasses', $this->annotatedClasses);
 
-			$this->reflectionDataRuntimeCache->getBackend()->freeze();
-			$this->classSchemataRuntimeCache->getBackend()->freeze();
+			if ($this->reflectionDataRuntimeCache->getBackend() instanceof \TYPO3\Flow\Cache\Backend\FreezableBackendInterface) {
+				$this->reflectionDataRuntimeCache->getBackend()->freeze();
+			}
+			if ($this->classSchemataRuntimeCache->getBackend() instanceof \TYPO3\Flow\Cache\Backend\FreezableBackendInterface) {
+				$this->classSchemataRuntimeCache->getBackend()->freeze();
+			}
 
 			$this->log(sprintf('Built and froze reflection runtime caches (%s classes).', count($this->classReflectionData)), LOG_INFO);
 		} elseif ($this->context->isDevelopment()) {
