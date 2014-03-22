@@ -20,7 +20,7 @@ use TYPO3\Flow\Annotations as Flow;
  *
  * @Flow\Entity
  */
-class Account {
+class Account implements AccountInterface {
 
 	/**
 	 * @var string
