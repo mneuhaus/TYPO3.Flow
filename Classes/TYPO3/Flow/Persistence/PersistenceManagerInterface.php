@@ -36,13 +36,16 @@ interface PersistenceManagerInterface {
 	public function initialize();
 
 	/**
-	 * Commits new objects and changes to objects in the current persistence
-	 * session into the backend
+	 * Commits new objects and changes to objects in the current persistence session into the backend.
 	 *
+	 * If $onlyWhitelisteObjects is set to TRUE, only those objects which have been registered with whitelistObject()
+	 *
+	 *
+	 * @param boolean $onlyWhitelistedObjects
 	 * @return void
 	 * @api
 	 */
-	public function persistAll();
+	public function persistAll($onlyWhitelistedObjects = FALSE);
 
 	/**
 	 * Clears the in-memory state of the persistence.
@@ -164,6 +167,16 @@ interface PersistenceManagerInterface {
 	public function update($object);
 
 	/**
+	 * Adds the given object to a whitelist of objects which may be persisted even persistAll() is called with the
+	 * $onlyWhitelistedObjects flag. This is the case if "safe" HTTP request methods are used.
+	 *
+	 * @param object $object The object
+	 * @return void
+	 * @api
+	 */
+	public function whitelistObject($object);
+
+	/**
 	 * Returns TRUE, if an active connection to the persistence
 	 * backend has been established, e.g. entities can be persisted.
 	 *
@@ -181,4 +194,5 @@ interface PersistenceManagerInterface {
 	 * @return boolean
 	 */
 	public function hasUnpersistedChanges();
+
 }
