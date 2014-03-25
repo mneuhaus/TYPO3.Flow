@@ -231,6 +231,21 @@ If you need to store some data during a safe request (for example, logging some 
 for your analytics), you are still free to call ``PersistenceManager->persistAll()``
 manually.
 
+Whitelisted objects
+-------------------
+
+There are rare cases which still justify persisting objects during safe requests. For example,
+your application might want to generate thumbnails of images during a GET request and persist
+the resulting Resource objects.
+
+For these cases it is possible to whitelist specific objects via the Persistence Manager::
+
+	$this->persistenceManager->whitelistObject($thumbnail);
+	$this->persistenceManager->whitelistObject($thumbnail->getResource());
+
+Be very careful and think twice before using this method since many security measures are
+not active during "safe" request methods.
+
 Conventions for File and Class Names
 ====================================
 
