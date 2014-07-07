@@ -184,10 +184,13 @@ class Scripts {
 	 */
 	static public function initializeLockManager(Bootstrap $bootstrap) {
 		$systemLogger = $bootstrap->getEarlyInstance('TYPO3\Flow\Log\SystemLoggerInterface');
+		$configurationManager = $bootstrap->getEarlyInstance('TYPO3\Flow\Configuration\ConfigurationManager');
+		$settings = $configurationManager->getConfiguration(\TYPO3\Flow\Configuration\ConfigurationManager::CONFIGURATION_TYPE_SETTINGS, 'TYPO3.Flow');
 
 		$lockManager = new \TYPO3\Flow\Core\LockManager();
 		$lockManager->injectEnvironment($bootstrap->getEarlyInstance('TYPO3\Flow\Utility\Environment'));
 		$lockManager->injectSystemLogger($systemLogger);
+		$lockManager->injectSettings($settings);
 		$lockManager->initializeObject();
 
 		$lockManager->exitIfSiteLocked();
@@ -377,7 +380,6 @@ class Scripts {
 		$reflectionService->setReflectionDataCompiletimeCache($cacheManager->getCache('Flow_Reflection_CompiletimeData'));
 		$reflectionService->setReflectionDataRuntimeCache($cacheManager->getCache('Flow_Reflection_RuntimeData'));
 		$reflectionService->setClassSchemataRuntimeCache($cacheManager->getCache('Flow_Reflection_RuntimeClassSchemata'));
-		$reflectionService->injectSettings($configurationManager->getConfiguration(\TYPO3\Flow\Configuration\ConfigurationManager::CONFIGURATION_TYPE_SETTINGS, 'TYPO3.Flow'));
 		$reflectionService->injectEnvironment($bootstrap->getEarlyInstance('TYPO3\Flow\Utility\Environment'));
 
 		$bootstrap->setEarlyInstance('TYPO3\Flow\Reflection\ReflectionService', $reflectionService);

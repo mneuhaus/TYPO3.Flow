@@ -259,13 +259,13 @@ class Bootstrap {
 		$sequence->addStep(new Step('typo3.flow:annotationregistry', array('TYPO3\Flow\Core\Booting\Scripts', 'registerClassLoaderInAnnotationRegistry')));
 		$sequence->addStep(new Step('typo3.flow:configuration', array('TYPO3\Flow\Core\Booting\Scripts', 'initializeConfiguration')), 'typo3.flow:annotationregistry');
 		$sequence->addStep(new Step('typo3.flow:systemlogger', array('TYPO3\Flow\Core\Booting\Scripts', 'initializeSystemLogger')), 'typo3.flow:configuration');
+		$sequence->addStep(new Step('typo3.flow:errorhandling', array('TYPO3\Flow\Core\Booting\Scripts', 'initializeErrorHandling')), 'typo3.flow:systemlogger');
 
 		if ($this->context->isProduction()) {
-			$sequence->addStep(new Step('typo3.flow:lockmanager', array('TYPO3\Flow\Core\Booting\Scripts', 'initializeLockManager')), 'typo3.flow:systemlogger');
+			$sequence->addStep(new Step('typo3.flow:lockmanager', array('TYPO3\Flow\Core\Booting\Scripts', 'initializeLockManager')), 'typo3.flow:errorhandling');
 		}
 
-		$sequence->addStep(new Step('typo3.flow:errorhandling', array('TYPO3\Flow\Core\Booting\Scripts', 'initializeErrorHandling')), 'typo3.flow:systemlogger');
-		$sequence->addStep(new Step('typo3.flow:cachemanagement', array('TYPO3\Flow\Core\Booting\Scripts', 'initializeCacheManagement')), 'typo3.flow:systemlogger');
+		$sequence->addStep(new Step('typo3.flow:cachemanagement', array('TYPO3\Flow\Core\Booting\Scripts', 'initializeCacheManagement')), 'typo3.flow:errorhandling');
 		return $sequence;
 	}
 
@@ -281,11 +281,11 @@ class Bootstrap {
 
 		if ($this->context->isProduction()) {
 			$bootstrap = $this;
-			$sequence->addStep(new Step('typo3.flow:lockmanager:locksiteorexit', function() use ($bootstrap) { $bootstrap->getEarlyInstance('TYPO3\Flow\Core\LockManager')->lockSiteOrExit(); } ), 'typo3.flow:systemlogger');
+			$sequence->addStep(new Step('typo3.flow:lockmanager:locksiteorexit', function() use ($bootstrap) { $bootstrap->getEarlyInstance('TYPO3\Flow\Core\LockManager')->lockSiteOrExit(); } ), 'typo3.flow:errorhandling');
 		}
 
-		$sequence->addStep(new Step('typo3.flow:cachemanagement:forceflush', array('TYPO3\Flow\Core\Booting\Scripts', 'forceFlushCachesIfNecessary')), 'typo3.flow:systemlogger');
-		$sequence->addStep(new Step('typo3.flow:objectmanagement:compiletime:create', array('TYPO3\Flow\Core\Booting\Scripts', 'initializeObjectManagerCompileTimeCreate')), 'typo3.flow:systemlogger');
+		$sequence->addStep(new Step('typo3.flow:cachemanagement:forceflush', array('TYPO3\Flow\Core\Booting\Scripts', 'forceFlushCachesIfNecessary')), 'typo3.flow:errorhandling');
+		$sequence->addStep(new Step('typo3.flow:objectmanagement:compiletime:create', array('TYPO3\Flow\Core\Booting\Scripts', 'initializeObjectManagerCompileTimeCreate')), 'typo3.flow:errorhandling');
 		$sequence->addStep(new Step('typo3.flow:systemfilemonitor', array('TYPO3\Flow\Core\Booting\Scripts', 'initializeSystemFileMonitor')), 'typo3.flow:objectmanagement:compiletime:create');
 		$sequence->addStep(new Step('typo3.flow:reflectionservice', array('TYPO3\Flow\Core\Booting\Scripts', 'initializeReflectionService')), 'typo3.flow:systemfilemonitor');
 		$sequence->addStep(new Step('typo3.flow:objectmanagement:compiletime:finalize', array('TYPO3\Flow\Core\Booting\Scripts', 'initializeObjectManagerCompileTimeFinalize')), 'typo3.flow:reflectionservice');
@@ -301,7 +301,7 @@ class Bootstrap {
 	 */
 	public function buildRuntimeSequence() {
 		$sequence = $this->buildEssentialsSequence('runtime');
-		$sequence->addStep(new Step('typo3.flow:objectmanagement:proxyclasses', array('TYPO3\Flow\Core\Booting\Scripts', 'initializeProxyClasses')), 'typo3.flow:systemlogger');
+		$sequence->addStep(new Step('typo3.flow:objectmanagement:proxyclasses', array('TYPO3\Flow\Core\Booting\Scripts', 'initializeProxyClasses')), 'typo3.flow:errorhandling');
 		$sequence->addStep(new Step('typo3.flow:classloader:cache', array('TYPO3\Flow\Core\Booting\Scripts', 'initializeClassLoaderClassesCache')), 'typo3.flow:objectmanagement:proxyclasses');
 		$sequence->addStep(new Step('typo3.flow:objectmanagement:runtime', array('TYPO3\Flow\Core\Booting\Scripts', 'initializeObjectManager')), 'typo3.flow:classloader:cache');
 

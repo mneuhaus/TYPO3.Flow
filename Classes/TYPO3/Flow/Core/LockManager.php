@@ -44,6 +44,11 @@ class LockManager {
 	protected $siteLocked = FALSE;
 
 	/**
+	 * @var array
+	 */
+	protected $settings;
+
+	/**
 	 * Injects the environment utility
 	 *
 	 * @param \TYPO3\Flow\Utility\Environment $environment
@@ -61,6 +66,15 @@ class LockManager {
 	 */
 	public function injectSystemLogger(\TYPO3\Flow\Log\SystemLoggerInterface $systemLogger) {
 		$this->systemLogger = $systemLogger;
+	}
+
+	/**
+	 * Injects the configuration settings
+	 *
+	 * @param array $settings Settings of the Flow package
+	 */
+	public function injectSettings(array $settings) {
+		$this->settings = $settings['core'];
 	}
 
 	/**
@@ -98,7 +112,11 @@ class LockManager {
 		if ($this->isSiteLocked() === TRUE) {
 			if (FLOW_SAPITYPE === 'Web') {
 				header('HTTP/1.1 503 Service Temporarily Unavailable');
-				readfile(FLOW_PATH_FLOW . 'Resources/Private/Core/LockHoldingStackPage.html');
+				if (isset($this->settings['lockHoldingStackPage']) && is_file($this->settings['lockHoldingStackPage'])) {
+					readfile($this->settings['lockHoldingStackPage']);
+				} else {
+					readfile(FLOW_PATH_FLOW . 'Resources/Private/Core/LockHoldingStackPage.html');
+				}
 			} else {
 				$expiresIn = abs((time() - self::LOCKFILE_MAXIMUM_AGE - filemtime($this->lockPathAndFilename)));
 				echo 'Site is currently locked, exiting.' . PHP_EOL . 'The current lock will expire after ' . $expiresIn . ' seconds.' . PHP_EOL;

@@ -56,6 +56,9 @@ TYPO3:
       # If set to boolean FALSE, Flow does not try to specify any php.ini file to the sub process.
       subRequestPhpIniPathAndFilename: NULL
 
+      # The page being displayed when the site is locked (e.g. during compile time)
+      lockHoldingStackPage: '%FLOW_PATH_FLOW%Resources/Private/Core/LockHoldingStackPage.html'
+
     error:
 
       exceptionHandler:
