@@ -52,6 +52,13 @@ class ConfigurationProperty {
 	protected $autowiring = \TYPO3\Flow\Object\Configuration\Configuration::AUTOWIRING_MODE_ON;
 
 	/**
+	 * Should this property be lazy injected
+	 *
+	 * @var boolean
+	 */
+	protected $lazyInjection = NULL;
+
+	/**
 	 * Constructor - sets the name, type and value of the property
 	 *
 	 * @param string $name Name of the property
@@ -132,6 +139,24 @@ class ConfigurationProperty {
 	 */
 	public function getAutowiring() {
 		return $this->autowiring;
+	}
+
+	/**
+	 * If this property can be lazy injected if the dependency injection mechanism offers that.
+	 *
+	 * @return boolean
+	 */
+	public function getLazyInjection() {
+		return $this->lazyInjection;
+	}
+
+	/**
+	 * Sets lazy injection for this property
+	 *
+	 * @param boolean $lazyInjection
+	 */
+	public function setLazyInjection($lazyInjection) {
+		$this->lazyInjection = $lazyInjection;
 	}
 
 }

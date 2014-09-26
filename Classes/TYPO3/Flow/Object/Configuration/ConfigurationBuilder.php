@@ -410,8 +410,17 @@ class ConfigurationBuilder {
 					throw new \TYPO3\Flow\Object\Exception($exceptionMessage, 1328109641);
 				}
 				if (!array_key_exists($propertyName, $properties)) {
-					$objectName = trim(implode('', $this->reflectionService->getPropertyTagValues($className, $propertyName, 'var')), ' \\');
-					$properties[$propertyName] =  new ConfigurationProperty($propertyName, $objectName, ConfigurationProperty::PROPERTY_TYPES_OBJECT);
+					$injectAnnotation = $this->reflectionService->getPropertyAnnotation($className, $propertyName, 'TYPO3\Flow\Annotations\Inject');
+					if ($injectAnnotation->setting !== NULL) {
+						$settingPackagePathArray = $injectAnnotation->package !== NULL ? explode('.', $injectAnnotation->package) : explode('.', $objectConfiguration->getPackageKey());
+						$settingPathArray = $injectAnnotation->setting === '' ? array() : explode('.', $injectAnnotation->setting);
+						$settingPathArray = array_merge($settingPackagePathArray, $settingPathArray);
+						$properties[$propertyName] = new ConfigurationProperty($propertyName, implode('.', $settingPathArray), ConfigurationProperty::PROPERTY_TYPES_SETTING);
+					} else {
+						$objectName = trim(implode('', $this->reflectionService->getPropertyTagValues($className, $propertyName, 'var')), ' \\');
+						$properties[$propertyName] =  new ConfigurationProperty($propertyName, $objectName, ConfigurationProperty::PROPERTY_TYPES_OBJECT);
+						$properties[$propertyName]->setLazyInjection($injectAnnotation->lazy);
+					}
 				}
 			}
 
