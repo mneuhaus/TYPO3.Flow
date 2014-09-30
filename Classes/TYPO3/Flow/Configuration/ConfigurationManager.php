@@ -782,6 +782,11 @@ EOD;
 				} else {
 					$mergedSubRouteConfiguration['uriPattern'] = rtrim($this->replacePlaceholders($routeConfiguration['uriPattern'], array($subRouteKey => '')), '/');
 				}
+				if (isset($mergedSubRouteConfiguration['defaults']) && is_array($mergedSubRouteConfiguration['defaults'])) {
+					foreach ($mergedSubRouteConfiguration['defaults'] as $key=>$defaultValue) {
+						$mergedSubRouteConfiguration['defaults'][$key] = $this->replacePlaceholders($defaultValue, $variables);
+					}
+				}
 				$mergedSubRouteConfiguration = Arrays::arrayMergeRecursiveOverrule($routeConfiguration, $mergedSubRouteConfiguration);
 				unset($mergedSubRouteConfiguration['subRoutes']);
 				$mergedSubRoutesConfigurations[] = $mergedSubRouteConfiguration;
