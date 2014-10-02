@@ -58,6 +58,11 @@ class ResourceTypeConverter extends AbstractTypeConverter {
 	const CONFIGURATION_RESOURCE_LOAD_PATH = 'resourceLoadPath';
 
 	/**
+	 * @var integer
+	 */
+	const CONFIGURATION_IDENTITY_CREATION_ALLOWED = 1;
+
+	/**
 	 * @var array<string>
 	 */
 	protected $sourceTypes = array('string', 'array');
@@ -172,7 +177,22 @@ class ResourceTypeConverter extends AbstractTypeConverter {
 	protected function handleHashAndData(array $source, PropertyMappingConfigurationInterface $configuration = NULL) {
 		$hash = NULL;
 		$resource = FALSE;
-		if (is_array($source) && isset($source['hash']) && preg_match('/[0-9a-f]{40}/', $source['hash'])) {
+		$givenResourceIdentity = NULL;
+
+		if (isset($source['__identity'])) {
+			$givenResourceIdentity = $source['__identity'];
+			unset($source['__identity']);
+			$resource = $this->persistenceManager->getObjectByIdentifier($givenResourceIdentity, 'TYPO3\Flow\Resource\Resource');
+			if ($resource instanceof \TYPO3\Flow\Resource\Resource) {
+				return $resource;
+			}
+
+			if ($configuration->getConfigurationValue('TYPO3\Flow\Resource\ResourceTypeConverter', self::CONFIGURATION_IDENTITY_CREATION_ALLOWED) !== TRUE) {
+				throw new \TYPO3\Flow\Property\Exception\InvalidPropertyMappingConfigurationException('Creation of resource objects with identity not allowed. To enable this, you need to set the PropertyMappingConfiguration Value "CONFIGURATION_IDENTITY_CREATION_ALLOWED" to TRUE');
+			}
+		}
+
+		if (isset($source['hash']) && preg_match('/[0-9a-f]{40}/', $source['hash'])) {
 			$hash = $source['hash'];
 		}
 
@@ -182,24 +202,40 @@ class ResourceTypeConverter extends AbstractTypeConverter {
 				$resource = new Resource();
 				$resource->setFilename($source['filename']);
 				$resource->setResourcePointer($resourcePointer);
-
-				return $resource;
 			}
 		}
 
-		if (isset($source['data'])) {
-			$resource = $this->resourceManager->createResourceFromContent($source['data'], $source['filename']);
-		} elseif ($hash !== NULL) {
-			$resource = $this->resourceManager->importResource($configuration->getConfigurationValue('TYPO3\Flow\Resource\ResourceTypeConverter', self::CONFIGURATION_RESOURCE_LOAD_PATH) . '/' . $hash);
-			if (is_array($source) && isset($source['filename'])) {
-				$resource->setFilename($source['filename']);
+		if ($resource === NULL) {
+			if (isset($source['data'])) {
+				$resource = $this->resourceManager->createResourceFromContent($source['data'], $source['filename']);
+			} elseif ($hash !== NULL) {
+				$resource = $this->resourceManager->importResource($configuration->getConfigurationValue('TYPO3\Flow\Resource\ResourceTypeConverter', self::CONFIGURATION_RESOURCE_LOAD_PATH) . '/' . $hash);
+				if (is_array($source) && isset($source['filename'])) {
+					$resource->setFilename($source['filename']);
+				}
 			}
 		}
 
-		if ($resource === FALSE) {
-			return new Error('The resource manager could not create a Resource instance.', 1404312901);
-		} else {
+		if ($resource instanceof \TYPO3\Flow\Resource\Resource) {
+			if ($givenResourceIdentity !== NULL) {
+				$this->setIdentity($resource, $givenResourceIdentity);
+			}
 			return $resource;
+		} else {
+			return new Error('The resource manager could not create a Resource instance.', 1404312901);
 		}
 	}
+
+	/**
+	 * Set the given $identity on the created $object.
+	 *
+	 * @param object $object
+	 * @param string|array $identity
+	 * @return void
+	 * @todo set identity properly if it is composite or custom property
+	 */
+	protected function setIdentity($object, $identity) {
+		\TYPO3\Flow\Reflection\ObjectAccess::setProperty($object, 'Persistence_Object_Identifier', $identity, TRUE);
+	}
+
 }
