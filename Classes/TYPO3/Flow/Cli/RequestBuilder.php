@@ -21,6 +21,11 @@ use TYPO3\Flow\Annotations as Flow;
 class RequestBuilder {
 
 	/**
+	 * This is used to parse the command line, when it's passed as a string
+	 */
+	const ARGUMENT_MATCHING_EXPRESSION = '/[^\' ]+|\'([^\']*)\'/';
+
+	/**
 	 * @var \TYPO3\Flow\Utility\Environment
 	 */
 	protected $environment;
@@ -99,7 +104,12 @@ class RequestBuilder {
 		$request = new Request();
 		$request->setControllerObjectName('TYPO3\Flow\Command\HelpCommandController');
 
-		$rawCommandLineArguments = is_array($commandLine) ? $commandLine : explode(' ', $commandLine);
+		if (is_array($commandLine) === TRUE) {
+			$rawCommandLineArguments = $commandLine;
+		} else {
+			preg_match_all(self::ARGUMENT_MATCHING_EXPRESSION, $commandLine, $commandLineMatchings);
+			$rawCommandLineArguments = $commandLineMatchings[0];
+		}
 		if (count($rawCommandLineArguments) === 0) {
 			$request->setControllerCommandName('helpStub');
 			return $request;
