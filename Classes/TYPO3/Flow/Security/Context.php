@@ -301,6 +301,7 @@ class Context {
 		$this->updateTokens($this->activeTokens);
 
 		$this->initialized = TRUE;
+		$this->emitSecurityContextInitialized();
 	}
 
 	/**
@@ -309,6 +310,14 @@ class Context {
 	public function isInitialized() {
 		return $this->initialized;
 	}
+
+	/**
+	 * Emits a signal after the SecurityContext has been is initialized
+	 *
+	 * @Flow\Signal
+	 * @return void
+	 */
+	public function emitSecurityContextInitialized(){ }
 
 	/**
 	 * Get the token authentication strategy
