@@ -691,6 +691,9 @@ class Session implements SessionInterface {
 			$sessionIdentifier = $this->request->getCookie($this->sessionCookieName)->getValue();
 			$this->sessionCookie = new Cookie($this->sessionCookieName, $sessionIdentifier, 0, $this->sessionCookieLifetime, $this->sessionCookieDomain, $this->sessionCookiePath, $this->sessionCookieSecure, $this->sessionCookieHttpOnly);
 		}
+		$sessionTimeout = new \DateTime();
+		$sessionTimeout->setTimestamp($this->now + $this->inactivityTimeout);
+		$this->response->setHeader('X-Session-Timeout', $sessionTimeout);
 	}
 
 	/**
