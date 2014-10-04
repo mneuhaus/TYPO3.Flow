@@ -46,6 +46,11 @@ class PersistentObjectConverter extends ObjectConverter {
 	const CONFIGURATION_CREATION_ALLOWED = 2;
 
 	/**
+	 * @var integer
+	 */
+	const CONFIGURATION_IDENTITY_CREATION_ALLOWED = 5;
+
+	/**
 	 * @var array
 	 */
 	protected $sourceTypes = array('string', 'array');
@@ -149,6 +154,9 @@ class PersistentObjectConverter extends ObjectConverter {
 				return NULL;
 			}
 			$object = $this->fetchObjectFromPersistence($source, $targetType);
+			if ($object === NULL) {
+				throw new \TYPO3\Flow\Property\Exception\TargetNotFoundException(sprintf('Object of type "%s" with identity "%s" not found.', $targetType, $source), 1412283033);
+			}
 		} else {
 			throw new \InvalidArgumentException('Only strings and arrays are accepted.', 1305630314);
 		}
@@ -179,19 +187,40 @@ class PersistentObjectConverter extends ObjectConverter {
 	 * @throws \TYPO3\Flow\Property\Exception\InvalidPropertyMappingConfigurationException
 	 */
 	protected function handleArrayData(array $source, $targetType, array &$convertedChildProperties, \TYPO3\Flow\Property\PropertyMappingConfigurationInterface $configuration = NULL) {
-		if (isset($source['__identity'])) {
-			$object = $this->fetchObjectFromPersistence($source['__identity'], $targetType);
-
-			if (count($source) > 1 && ($configuration === NULL || $configuration->getConfigurationValue('TYPO3\Flow\Property\TypeConverter\PersistentObjectConverter', self::CONFIGURATION_MODIFICATION_ALLOWED) !== TRUE)) {
-				throw new \TYPO3\Flow\Property\Exception\InvalidPropertyMappingConfigurationException('Modification of persistent objects not allowed. To enable this, you need to set the PropertyMappingConfiguration Value "CONFIGURATION_MODIFICATION_ALLOWED" to TRUE.', 1297932028);
-			}
-		} else {
+		if (!isset($source['__identity'])) {
 			if ($configuration === NULL || $configuration->getConfigurationValue('TYPO3\Flow\Property\TypeConverter\PersistentObjectConverter', self::CONFIGURATION_CREATION_ALLOWED) !== TRUE) {
 				throw new \TYPO3\Flow\Property\Exception\InvalidPropertyMappingConfigurationException('Creation of objects not allowed. To enable this, you need to set the PropertyMappingConfiguration Value "CONFIGURATION_CREATION_ALLOWED" to TRUE');
 			}
 			$object = $this->buildObject($convertedChildProperties, $targetType);
+		} else {
+			$object = $this->fetchObjectFromPersistence($source['__identity'], $targetType);
+			if ($object === NULL) {
+				if ($configuration !== NULL && $configuration->getConfigurationValue('TYPO3\Flow\Property\TypeConverter\PersistentObjectConverter', self::CONFIGURATION_IDENTITY_CREATION_ALLOWED) === TRUE) {
+					$object = $this->buildObject($convertedChildProperties, $targetType);
+					$this->setIdentity($object, $source['__identity']);
+				} else {
+					throw new \TYPO3\Flow\Property\Exception\TargetNotFoundException(sprintf('Object of type "%s" with identity "%s" not found.', $targetType, print_r($source['__identity'], TRUE)), 1412283038);
+				}
+			} else {
+				if (count($source) > 1 && ($configuration === NULL || $configuration->getConfigurationValue('TYPO3\Flow\Property\TypeConverter\PersistentObjectConverter', self::CONFIGURATION_MODIFICATION_ALLOWED) !== TRUE)) {
+					throw new \TYPO3\Flow\Property\Exception\InvalidPropertyMappingConfigurationException('Modification of persistent objects not allowed. To enable this, you need to set the PropertyMappingConfiguration Value "CONFIGURATION_MODIFICATION_ALLOWED" to TRUE.', 1297932028);
+				}
+			}
 		}
+
 		return $object;
+	}
+
+	/**
+	 * Set the given $identity on the created $object.
+	 *
+	 * @param object $object
+	 * @param string|array $identity
+	 * @return void
+	 * @todo set identity properly if it is composite or custom property
+	 */
+	protected function setIdentity($object, $identity) {
+		\TYPO3\Flow\Reflection\ObjectAccess::setProperty($object, 'Persistence_Object_Identifier', $identity, TRUE);
 	}
 
 	/**
@@ -210,10 +239,6 @@ class PersistentObjectConverter extends ObjectConverter {
 			$object = $this->findObjectByIdentityProperties($identity, $targetType);
 		} else {
 			throw new \TYPO3\Flow\Property\Exception\InvalidSourceException('The identity property "' . $identity . '" is neither a string nor an array.', 1297931020);
-		}
-
-		if ($object === NULL) {
-			throw new \TYPO3\Flow\Property\Exception\TargetNotFoundException('Object with identity "' . print_r($identity, TRUE) . '" not found.', 1297933823);
 		}
 
 		return $object;
