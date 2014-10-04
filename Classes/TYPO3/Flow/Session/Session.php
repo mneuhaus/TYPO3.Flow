@@ -291,6 +291,7 @@ class Session implements SessionInterface {
 
 			$this->writeSessionMetaDataCacheEntry();
 		}
+		$this->emitSessionIsReady();
 	}
 
 	/**
@@ -354,9 +355,17 @@ class Session implements SessionInterface {
 
 			$lastActivitySecondsAgo = ($this->now - $this->lastActivityTimestamp);
 			$this->lastActivityTimestamp = $this->now;
+			$this->emitSessionIsReady();
 			return $lastActivitySecondsAgo;
 		}
 	}
+
+	/**
+	 *
+	 * @return void
+	 * @Flow\Signal
+	 */
+	public function emitSessionIsReady() { }
 
 	/**
 	 * Returns the current session identifier
