@@ -191,4 +191,12 @@ class DependencyInjectionTest extends \TYPO3\Flow\Tests\FunctionalTestCase {
 		$classWithSettings = new Fixtures\ClassWithSettings();
 		$this->assertSame($classWithSettings->getInjectedSettingB(), 'injected setting');
 	}
+
+	/**
+	 * @test
+	 */
+	public function injectionOfFullPackageSettings() {
+		$classWithSettings = new Fixtures\ClassWithSettings();
+		$this->assertSame($classWithSettings->getInjectedPackageSettings(), $classWithSettings->getSettings());
+	}
 }

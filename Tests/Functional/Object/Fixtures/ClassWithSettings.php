@@ -37,6 +37,12 @@ class ClassWithSettings {
 	protected $injectedSettingB;
 
 	/**
+	 * @Flow\Inject(setting="", Package="TYPO3.Flow")
+	 * @var array
+	 */
+	protected $injectedPackageSettings;
+
+	/**
 	 * @var array
 	 */
 	protected $settings;
@@ -75,6 +81,13 @@ class ClassWithSettings {
 	 */
 	public function getSettings() {
 		return $this->settings;
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getInjectedPackageSettings() {
+		return $this->injectedPackageSettings;
 	}
 
 }
