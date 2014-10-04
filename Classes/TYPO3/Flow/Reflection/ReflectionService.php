@@ -1486,30 +1486,29 @@ class ReflectionService {
 	/**
 	 * Adds properties of the class at hand to the class schema.
 	 *
-	 * Only non-transient properties annotated with a var annotation will be added.
-	 * Invalid annotations will cause an exception to be thrown. Properties pointing
-	 * to existing classes will only be added if the target type is annotated as
-	 * entity or valueobject.
+	 * Properties will be added if:
+	 * They have a var annotation && (!transient-annotation && !inject-annotation)
+	 * Invalid annotations will cause an exception to be thrown.
 	 *
 	 * @param \TYPO3\Flow\Reflection\ClassSchema $classSchema
 	 * @return void
-	 * @throws \InvalidArgumentException
-	 * @throws \TYPO3\Flow\Reflection\Exception\InvalidPropertyTypeException
+	 * @throws Exception\InvalidPropertyTypeException
 	 */
 	protected function addPropertiesToClassSchema(ClassSchema $classSchema) {
-
-		// those are added as property even if not tagged with entity/valueobject
-		$propertyTypeWhiteList = array(
-			'DateTime',
-			'SplObjectStorage',
-			'Doctrine\Common\Collections\Collection',
-			'Doctrine\Common\Collections\ArrayCollection'
-		);
-
 		$className = $classSchema->getClassName();
 		$needsArtificialIdentity = TRUE;
+
 		foreach ($this->getClassPropertyNames($className) as $propertyName) {
-			if ($this->isPropertyTaggedWith($className, $propertyName, 'var') && !$this->isPropertyAnnotatedWith($className, $propertyName, 'TYPO3\Flow\Annotations\Transient')) {
+
+			if ($this->isPropertyAnnotatedWith($className, $propertyName, 'TYPO3\Flow\Annotations\Transient')) {
+				continue;
+			}
+
+			if ($this->isPropertyAnnotatedWith($className, $propertyName, 'TYPO3\Flow\Annotations\Inject')) {
+				continue;
+			}
+
+			if ($this->isPropertyTaggedWith($className, $propertyName, 'var')) {
 				$varTagValues = $this->getPropertyTagValues($className, $propertyName, 'var');
 				if (count($varTagValues) > 1) {
 					throw new InvalidPropertyTypeException('More than one @var annotation given for "' . $className . '::$' . $propertyName . '"', 1367334366);
@@ -1521,20 +1520,8 @@ class ReflectionService {
 					$needsArtificialIdentity = FALSE;
 				}
 
-				try {
-					$parsedType = TypeHandling::parseType($declaredType);
-				} catch (InvalidTypeException $exception) {
-					throw new \InvalidArgumentException(sprintf($exception->getMessage(), 'class "' . $className . '" for property "' . $propertyName . '"'), 1315564475);
-				}
-
-				if (!in_array($parsedType['type'], $propertyTypeWhiteList)
-					&& (class_exists($parsedType['type']) || interface_exists($parsedType['type']))
-					&& !($this->isClassAnnotatedWith($parsedType['type'], 'TYPO3\Flow\Annotations\Entity') || $this->isClassAnnotatedWith($parsedType['type'], 'Doctrine\ORM\Mapping\Entity') || $this->isClassAnnotatedWith($parsedType['type'], 'TYPO3\Flow\Annotations\ValueObject'))
-				) {
-					continue;
-				}
-
 				$classSchema->addProperty($propertyName, $declaredType, $this->isPropertyAnnotatedWith($className, $propertyName, 'TYPO3\Flow\Annotations\Lazy'), $this->isPropertyAnnotatedWith($className, $propertyName, 'TYPO3\Flow\Annotations\Transient'));
+
 				if ($this->isPropertyAnnotatedWith($className, $propertyName, 'TYPO3\Flow\Annotations\Identity')) {
 					$classSchema->markAsIdentityProperty($propertyName);
 				}
