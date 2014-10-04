@@ -24,6 +24,11 @@ class PrototypeClassD {
 	protected $objectB;
 
 	/**
+	 * @var \TYPO3\Flow\Tests\Functional\Object\Fixtures\PrototypeClassE
+	 */
+	protected $objectE;
+
+	/**
 	 * @var integer
 	 */
 	public $injectionRuns = 0;
