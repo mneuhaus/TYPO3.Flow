@@ -380,4 +380,20 @@ class RequestBuilderTest extends \TYPO3\Flow\Tests\UnitTestCase {
 		$this->assertEquals($expectedArguments, $request->getArguments());
 	}
 
+	/**
+	 * @test
+	 */
+	public function quotedArgumentValuesAreCorrectlyParsedWhenPassingTheCommandAsString() {
+		$methodParameters = array(
+				'requiredArgument1' => array('optional' => FALSE, 'type' => 'string'),
+				'requiredArgument2' => array('optional' => FALSE, 'type' => 'string'),
+		);
+		$this->mockReflectionService->expects($this->once())->method('getMethodParameters')->with('Acme\Test\Command\DefaultCommandController', 'listCommand')->will($this->returnValue($methodParameters));
+
+		$expectedArguments = array('requiredArgument1' => 'firstArgumentValue', 'requiredArgument2' => '\'value with spaces\'');
+
+		$request = $this->requestBuilder->build('acme.test:default:list firstArgumentValue \'value with spaces\'');
+		$this->assertEquals($expectedArguments, $request->getArguments());
+	}
+
 }
