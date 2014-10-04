@@ -140,8 +140,13 @@ class Package implements PackageInterface {
 		$this->packageKey = $packageKey;
 		$this->packagePath = Files::getNormalizedPath($packagePath);
 		$autoloadType = $this->getAutoloadType();
+
 		if ($autoloadType === self::AUTOLOADER_TYPE_PSR0 || $autoloadType === self::AUTOLOADER_TYPE_PSR4) {
-			$this->classesPath = Files::getNormalizedPath($this->packagePath . $this->getComposerManifest()->autoload->{$autoloadType}->{$this->getNamespace()});
+			$autoloadPath = $this->getComposerManifest()->autoload->{$autoloadType}->{$this->getNamespace()};
+			if (is_array($autoloadPath)) {
+				$autoloadPath = $autoloadPath[0];
+			}
+			$this->classesPath = Files::getNormalizedPath($this->packagePath . $autoloadPath);
 		} else {
 			$this->classesPath = Files::getNormalizedPath($this->packagePath . $classesPath);
 		}
