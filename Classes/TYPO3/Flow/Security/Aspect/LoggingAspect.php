@@ -36,7 +36,7 @@ class LoggingAspect {
 	/**
 	 * Logs calls and results of the authenticate() method of the Authentication Manager
 	 *
-	 * @Flow\After("within(TYPO3\Flow\Security\Authentication\AuthenticationManagerInterface) && method(.*->authenticate())")
+	 * @Flow\After("within('TYPO3\Flow\Security\Authentication\AuthenticationManagerInterface') && method('.*->authenticate()')")
 	 * @param \TYPO3\Flow\Aop\JoinPointInterface $joinPoint The current joinpoint
 	 * @return mixed The result of the target method if it has not been intercepted
 	 * @throws \Exception
@@ -61,7 +61,7 @@ class LoggingAspect {
 	/**
 	 * Logs calls and results of the logout() method of the Authentication Manager
 	 *
-	 * @Flow\AfterReturning("within(TYPO3\Flow\Security\Authentication\AuthenticationManagerInterface) && method(.*->logout())")
+	 * @Flow\AfterReturning("within('TYPO3\Flow\Security\Authentication\AuthenticationManagerInterface') && method('.*->logout()')")
 	 * @param \TYPO3\Flow\Aop\JoinPointInterface $joinPoint The current joinpoint
 	 * @return mixed The result of the target method if it has not been intercepted
 	 */
@@ -85,7 +85,7 @@ class LoggingAspect {
 	/**
 	 * Logs calls and results of the authenticate() method of an authentication provider
 	 *
-	 * @Flow\AfterReturning("within(TYPO3\Flow\Security\Authentication\AuthenticationProviderInterface) && method(.*->authenticate())")
+	 * @Flow\AfterReturning("within('TYPO3\Flow\Security\Authentication\AuthenticationProviderInterface') && method('.*->authenticate()')")
 	 * @param \TYPO3\Flow\Aop\JoinPointInterface $joinPoint The current joinpoint
 	 * @return mixed The result of the target method if it has not been intercepted
 	 */
@@ -109,7 +109,7 @@ class LoggingAspect {
 	/**
 	 * Logs calls and results of decideOnJoinPoint()
 	 *
-	 * @Flow\AfterThrowing("method(TYPO3\Flow\Security\Authorization\AccessDecisionVoterManager->decideOnJoinPoint())")
+	 * @Flow\AfterThrowing("method('TYPO3\Flow\Security\Authorization\AccessDecisionVoterManager->decideOnJoinPoint()')")
 	 * @param \TYPO3\Flow\Aop\JoinPointInterface $joinPoint
 	 * @throws \Exception
 	 * @return void
@@ -126,7 +126,7 @@ class LoggingAspect {
 	/**
 	 * Logs calls and results of decideOnResource()
 	 *
-	 * @Flow\AfterThrowing("method(TYPO3\Flow\Security\Authorization\AccessDecisionVoterManager->decideOnResource())")
+	 * @Flow\AfterThrowing("method('TYPO3\Flow\Security\Authorization\AccessDecisionVoterManager->decideOnResource()')")
 	 * @param \TYPO3\Flow\Aop\JoinPointInterface $joinPoint
 	 * @throws \Exception
 	 * @return void

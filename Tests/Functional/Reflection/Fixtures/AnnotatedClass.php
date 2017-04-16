@@ -16,7 +16,7 @@ use TYPO3\Flow\Annotations as Flow;
 
 /**
  * @ORM\Entity
- * @Flow\Introduce("TYPO3\Flow\Persistence\Aspect\PersistenceMagicAspect->isEntityOrValueObject", interfaceName="TYPO3\Flow\Persistence\Aspect\PersistenceMagicInterface")
+ * @Flow\Introduce("namedPointcut('TYPO3\Flow\Persistence\Aspect\PersistenceMagicAspect->isEntityOrValueObject')", interfaceName="TYPO3\Flow\Persistence\Aspect\PersistenceMagicInterface")
  */
 class AnnotatedClass {
 

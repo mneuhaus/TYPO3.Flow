@@ -63,7 +63,7 @@ class PrivateResourcesPublishingAspect {
 	/**
 	 * Returns the web URI to be used to publish the specified persistent resource
 	 *
-	 * @Flow\Around("setting(TYPO3.Flow.security.enable) && method(TYPO3\Flow\Resource\Publishing\FileSystemPublishingTarget->buildPersistentResourceWebUri())")
+	 * @Flow\Around("setting('TYPO3.Flow.security.enable') && method('TYPO3\Flow\Resource\Publishing\FileSystemPublishingTarget->buildPersistentResourceWebUri()')")
 	 * @param \TYPO3\Flow\Aop\JoinPointInterface $joinPoint The current join point
 	 * @return mixed Result of the target method, a rewritten private resource URI or FALSE on error
 	 * @todo Rewrite of the resource title should be done by general string to uri rewrite function from somewhere else
@@ -98,7 +98,7 @@ class PrivateResourcesPublishingAspect {
 	/**
 	 * Returns the publish path and filename to be used to publish the specified persistent resource
 	 *
-	 * @Flow\Around("method(TYPO3\Flow\Resource\Publishing\FileSystemPublishingTarget->buildPersistentResourcePublishPathAndFilename()) && setting(TYPO3.Flow.security.enable)")
+	 * @Flow\Around("method('TYPO3\Flow\Resource\Publishing\FileSystemPublishingTarget->buildPersistentResourcePublishPathAndFilename()') && setting('TYPO3.Flow.security.enable')")
 	 * @param \TYPO3\Flow\Aop\JoinPointInterface $joinPoint The current join point
 	 * @return mixed Result of the target method
 	 */
@@ -153,7 +153,7 @@ class PrivateResourcesPublishingAspect {
 	/**
 	 * Unpublishes a private resource from all private user directories
 	 *
-	 * @Flow\After("method(TYPO3\Flow\Resource\Publishing\FileSystemPublishingTarget->unpublishPersistentResource()) && setting(TYPO3.Flow.security.enable)")
+	 * @Flow\After("method('TYPO3\Flow\Resource\Publishing\FileSystemPublishingTarget->unpublishPersistentResource()') && setting('TYPO3.Flow.security.enable')")
 	 * @param \TYPO3\Flow\Aop\JoinPointInterface $joinPoint The current join point
 	 * @return mixed Result of the target method
 	 * @todo implement this method

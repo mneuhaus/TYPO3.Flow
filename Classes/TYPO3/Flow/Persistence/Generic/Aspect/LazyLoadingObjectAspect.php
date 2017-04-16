@@ -22,12 +22,12 @@ use TYPO3\Flow\Annotations as Flow;
 class LazyLoadingObjectAspect {
 
 	/**
-	 * @Flow\Pointcut("classAnnotatedWith(TYPO3\Flow\Annotations\Entity) || classAnnotatedWith(Doctrine\ORM\Mapping\Entity) || classAnnotatedWith(TYPO3\Flow\Annotations\ValueObject)")
+	 * @Flow\Pointcut("classAnnotatedWith('TYPO3\Flow\Annotations\Entity') || classAnnotatedWith('Doctrine\ORM\Mapping\Entity') || classAnnotatedWith('TYPO3\Flow\Annotations\ValueObject')")
 	 */
 	public function isEntityOrValueObject() {}
 
 	/**
-	 * @Flow\Pointcut("TYPO3\Flow\Persistence\Generic\Aspect\LazyLoadingObjectAspect->isEntityOrValueObject && classAnnotatedWith(TYPO3\Flow\Annotations\Lazy)")
+	 * @Flow\Pointcut("namedPointcut('TYPO3\Flow\Persistence\Generic\Aspect\LazyLoadingObjectAspect->isEntityOrValueObject') && classAnnotatedWith('TYPO3\Flow\Annotations\Lazy')")
 	 */
 	public function needsLazyLoadingObjectAspect() {}
 
@@ -40,7 +40,7 @@ class LazyLoadingObjectAspect {
 	 *
 	 * @param \TYPO3\Flow\Aop\JoinPointInterface $joinPoint The current join point
 	 * @return void
-	 * @Flow\Before("TYPO3\Flow\Persistence\Generic\Aspect\LazyLoadingObjectAspect->needsLazyLoadingObjectAspect && !method(.*->__construct())")
+	 * @Flow\Before("namedPointcut('TYPO3\Flow\Persistence\Generic\Aspect\LazyLoadingObjectAspect->needsLazyLoadingObjectAspect') && !method('.*->__construct()')")
 	 */
 	public function initialize(\TYPO3\Flow\Aop\JoinPointInterface $joinPoint) {
 		$proxy = $joinPoint->getProxy();
